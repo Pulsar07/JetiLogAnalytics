@@ -1,6 +1,6 @@
 # JETI Log Analytics
 
-a standalone Java application to scan an analyse JETI log files in a bulk matter.
+a standalone Java application to scan and analyses JETI log files in a bulk matter.
 
 The application is written to extract flight data per model. There is a flight detection algorithm used, based on the signal levels A1 and A2 given by any RX of JETI.
 If a model is not moving and the TX is very near to the model (as on the airfield or on the workbench), the values are near to the maximum.
