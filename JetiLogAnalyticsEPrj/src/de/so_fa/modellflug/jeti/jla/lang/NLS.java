@@ -1,4 +1,4 @@
-package de.so_fa.modellflug.jeti.jla;
+package de.so_fa.modellflug.jeti.jla.lang;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,9 +15,9 @@ public class NLS {
   private static Map<NLSKey, String> ourMLMap = ourEN;
 
   public static enum NLSKey {
-	KEY_READLOG, SCAN_LOG, FLIGHT_COUNT, MODEL, MODELS, MAX_HEIGHT, MAX_SPEED, AVG_SPEED,
+	KEY_READLOG, SCAN_LOG, FLIGHT_COUNT, MODEL, MODELS, MAX_HEIGHT, MAX_SPEED, AVG_SPEED, NORM_SPEED,
 	STATISTIC_TOTAL, FLIGHT, FLIGHT_DETECTION_TYPE, FLIGHTDURATION, LOG_COUNT, TOTAL, LOGDURATION, MODEL_COUNT, LOG_FOLDER_NOT_AS_EXPECTED,
-	LOG_FILE_NOT_AS_EXPECTED, MODEL_STATISTIC
+	LOG_FILE_NOT_AS_EXPECTED, MODEL_STATISTIC, ALARMS
   }
 
   {
@@ -54,6 +54,9 @@ public class NLS {
 	ourEN.put(NLSKey.AVG_SPEED, "avg. speed (in km/h)");
 	ourDE.put(NLSKey.AVG_SPEED, "mittl. Speed (in km/h)");
 
+	ourEN.put(NLSKey.NORM_SPEED, "normal speed (in km/h)");
+	ourDE.put(NLSKey.NORM_SPEED, "normal Speed (in km/h)");
+
 	ourEN.put(NLSKey.KEY_READLOG, "Reading Log-Files");
 	ourDE.put(NLSKey.KEY_READLOG, "Lese Log-Dateien");
 
@@ -78,6 +81,8 @@ public class NLS {
 	ourEN.put(NLSKey.TOTAL, "total");
 	ourDE.put(NLSKey.TOTAL, "gesamt");
 
+	ourEN.put(NLSKey.ALARMS, "alarms");
+	ourDE.put(NLSKey.ALARMS, "Alarme");
   }
 
   private static NLS ourInstance = null;

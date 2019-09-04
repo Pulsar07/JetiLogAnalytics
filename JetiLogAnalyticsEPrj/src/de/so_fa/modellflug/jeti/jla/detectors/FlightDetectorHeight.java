@@ -7,14 +7,13 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import de.so_fa.modellflug.jeti.jla.datamodel.Flight;
-import de.so_fa.modellflug.jeti.jla.datamodel.IFlightCreationObserver;
 import de.so_fa.modellflug.jeti.jla.datamodel.Model;
 import de.so_fa.modellflug.jeti.jla.datamodel.Flight.FlightDetection;
 import de.so_fa.modellflug.jeti.jla.log.JetiLogDataScanner;
 import de.so_fa.modellflug.jeti.jla.log.SensorValue;
 import de.so_fa.modellflug.jeti.jla.log.SensorValueDescription;
 
-public class FlightDetectorHeight implements ISensorObserver, IFlightDetector, IFlightCreationObserver {
+public class FlightDetectorHeight implements ISensorObserver, IFlightListener {
   private static Logger ourLogger = Logger.getLogger(FlightDetectorHeight.class.getName());
 
   final static double NOFLIGHT_HEIGHT_LIMIT = 10.0;
@@ -26,7 +25,7 @@ public class FlightDetectorHeight implements ISensorObserver, IFlightDetector, I
 
   public FlightDetectorHeight() {
 	super();
-	Flight.addFlightCreationObserver(this);
+	Flight.addFlightListener(this);
   }
 
   @Override
@@ -53,11 +52,11 @@ public class FlightDetectorHeight implements ISensorObserver, IFlightDetector, I
 	// absolute height: is not what we want
 	// height: is what we want, but only if relatvie height is not exiting
 	// relative height, is exactly what we, want
-	if (lcname.matches("\\s*abs.*hoehe|\\s*abs.*alti.*|\\s*abs.*height")) {
+	if (lcname.matches("abs.*hoehe|abs.*alti.*|abs.*height")) {
 	  // absolute height, cannot be used for flight detection
 	  return;
 	}
-	if (lcname.matches("\\s*rel.*hoehe|\\s*rel.*alti.*|\\s*rel.*height")) {
+	if (lcname.matches("rel.*hoehe|rel.*alti.*|rel.*height")) {
 	  // relative height, will be used if existing
 	  myValueDescription.put(aDescr.getId(), aDescr);
 	  if (aDescr.getUnit().equals("ft")) {
@@ -66,14 +65,14 @@ public class FlightDetectorHeight implements ISensorObserver, IFlightDetector, I
 	  return;
 	}
 
-	if (lcname.matches("\\s*hoehe|\\s*alti.*|\\s*height")) {
+	if (lcname.matches("hoehe|alti.*|height")) {
 	  // height, will be used if existing, if relative is not exiting
 	  if (myValueDescription.containsKey(aDescr.getId()) && myValueDescription.get(aDescr.getId()).getName()
-		  .toLowerCase().matches("\\s*rel.*hoehe|\\s*rel.*alti.*|\\s*rel.*height")) {
+		  .toLowerCase().matches("rel.*hoehe|rel.*alti.*|rel.*height")) {
 		return;
 	  }
 	  if (myValueDescription.containsKey(aDescr.getId())
-		  && myValueDescription.get(aDescr.getId()).getName().toLowerCase().matches("\\s*hoehe|\\s*height")) {
+		  && myValueDescription.get(aDescr.getId()).getName().toLowerCase().matches("hoehe|height")) {
 		return;
 	  }
 	  myValueDescription.put(aDescr.getId(), aDescr);
@@ -144,7 +143,7 @@ public class FlightDetectorHeight implements ISensorObserver, IFlightDetector, I
 		myNoFlightTimestamp = myCurrentTimestamp;
 	  }
 
-	  if (NOFLIGHT_TIME_RANGE_LIMIT_IN_MS < (myCurrentTimestamp - myNoFlightTimestamp)) {
+	  if (IFlightDetector.NOFLIGHT_TIME_RANGE_LIMIT_IN_MS < (myCurrentTimestamp - myNoFlightTimestamp)) {
 		finalizeFlight(false);
 	  }
 
@@ -184,7 +183,13 @@ public class FlightDetectorHeight implements ISensorObserver, IFlightDetector, I
   }
 
   @Override
-  public void notifyNewFlight(Flight aFlight) {
+  public void flightStart() {
+	// TODO Auto-generated method stub
+	
+  }
+
+  @Override
+  public void flightEnd(Flight aFlight) {
 	aFlight.setMaxHeight(myMaxHeight);
 	myMaxHeight = 0;
   }

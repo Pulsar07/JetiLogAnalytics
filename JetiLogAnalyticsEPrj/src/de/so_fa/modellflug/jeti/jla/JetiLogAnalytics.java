@@ -13,12 +13,15 @@ import java.time.format.DateTimeFormatter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import de.so_fa.modellflug.jeti.jla.NLS.NLSKey;
-import de.so_fa.modellflug.jeti.jla.NLS.NLSLang;
 import de.so_fa.modellflug.jeti.jla.datamodel.Model;
+import de.so_fa.modellflug.jeti.jla.detectors.AlarmDetector;
 import de.so_fa.modellflug.jeti.jla.detectors.FlightDetectorHeight;
 import de.so_fa.modellflug.jeti.jla.detectors.FlightDetectorSignalStrength;
-import de.so_fa.modellflug.jeti.jla.detectors.MaxSpeedDetector;
+import de.so_fa.modellflug.jeti.jla.detectors.ISensorObserver;
+import de.so_fa.modellflug.jeti.jla.detectors.SpeedDetector;
+import de.so_fa.modellflug.jeti.jla.lang.NLS;
+import de.so_fa.modellflug.jeti.jla.lang.NLS.NLSKey;
+import de.so_fa.modellflug.jeti.jla.lang.NLS.NLSLang;
 import de.so_fa.modellflug.jeti.jla.log.JetiLogDataScanner;
 import de.so_fa.utils.log.MyLogger;
 
@@ -27,9 +30,11 @@ public class JetiLogAnalytics {
   /*
    * Version history:
    * 
-   * 0.1.7 : 08/2019 RS :  refactored JetiLogDataScanner with support for ISensorObserver interface
-   * 0.1.8 : 08/2019 RS :  some ignore/fix "holes" in time stamp and sensor id as in some old log files existing 
-   *                       recalculate different sensor value units (m/s, mpt, ft) to the ISO system units km/h and m
+   * 0.1.7 : 08/2019 RS : refactored JetiLogDataScanner with support for
+   * ISensorObserver interface 0.1.8 : 08/2019 RS : some ignore/fix "holes" in
+   * time stamp and sensor id as in some old log files existing recalculate
+   * different sensor value units (m/s, mpt, ft) to the ISO system units km/h and
+   * m 0.1.9 : 09/2019 RS : added AlarmDetector to show alarms per flight / model
    */
   private static final String VERSION = "0.1.8";
   private static final String APP_NAME = "JetiLogAnalytics";
@@ -72,43 +77,28 @@ public class JetiLogAnalytics {
 		testCode();
 	  }
 
+	  LocalDate fromDate = null;
+	  LocalDate toDate = null;
+	  
+	  if (false) {
+		// for local esting purposes
+		logFolderName = "/home/stransky/Links/Modellflug/JETI/log/Log";
+
+		fromDate = LocalDate.of(2019, 5, 2);
+		toDate = LocalDate.of(2019, 5, 2);
+		fromDate = LocalDate.of(2019, 9, 1);
+		toDate = null;
+	  }
+
 	  File[] files = new File(logFolderName).listFiles();
-
-	  LocalDate fromDate = LocalDate.of(2019, 5, 2);
-	  LocalDate toDate = LocalDate.of(2019, 5, 2);
-	  if (true) {
-		fromDate = null;
-		toDate = null;
-
-	  }
-
-	  if (true) {
-		fromDate = LocalDate.of(2019, 1, 5);
-		toDate = LocalDate.of(2019, 8, 5);
-		toDate = null;
-		toDate = null;
-		
-		
-		toDate = LocalDate.of(2018, 5, 30);
-		fromDate = LocalDate.of(2019, 8, 20);
-		fromDate = null;
-		toDate = null;
-	  }
-	
-//		LocalDate fromDate = LocalDate.of(2018, 01, 01);
-//		LocalDate toDate = LocalDate.of(2018,12, 31);
-	  if (externCall) {
-		fromDate = null;
-		toDate = null;
-
-	  }
 
 	  traverseJetiLogFiles(files, null, fromDate, toDate);
 
 	  JetiLogDataScanner.addSensorObserver(new FlightDetectorHeight());
 	  JetiLogDataScanner.addSensorObserver(new FlightDetectorSignalStrength());
-	  JetiLogDataScanner.addSensorObserver(new MaxSpeedDetector());
-	  
+	  JetiLogDataScanner.addSensorObserver(new SpeedDetector());
+	  JetiLogDataScanner.addSensorObserver(new AlarmDetector());
+
 	  System.out.println("\n" + NLS.get(NLSKey.KEY_READLOG) + ":");
 	  JetiLogDataScanner.analyseData();
 	  Model.printResult();

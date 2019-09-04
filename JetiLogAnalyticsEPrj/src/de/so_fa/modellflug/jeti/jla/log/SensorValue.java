@@ -1,24 +1,37 @@
 package de.so_fa.modellflug.jeti.jla.log;
 
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 
 public class SensorValue {
+  private static final Logger ourLogger = Logger.getLogger(SensorValue.class.getName());
+  private static final int ALARM_TYPE = 16;
+  boolean isValid;
+  long myTime;
+  long mySensorId;
+  int myValueIdx;
+  int myType;
+  int myDecimalPlaces;
+  long myRawVal;
+  double myValue;
+  String myAlarmValue;
 
-	boolean isValid = false;
-	long myTime;
-	long mySensorId;
-	int myValueIdx;
-	int myType;
-	double myValue;
+  /*
+   * 004691301;0000000000;15;16;0;900MHz Tx aktiviert;0;0 002381367;4392122371;1;
+   * 1;2;848;2;1;0;4;3;1;0;4;4;1;0;39 | | | | | | | | | | | value | | | | decimal
+   * places | | | type | | value index | sensor id timestamp
+   */
 
-	public SensorValue(long aTimeStamp, long aSensorId, StringTokenizer aTokenizer) {
-		try {
-		    myTime = aTimeStamp;
-		    mySensorId = aSensorId;
-			myValueIdx = Integer.parseInt(aTokenizer.nextToken());
-			myType = Integer.parseInt(aTokenizer.nextToken());
-			int decimalPlaces = Integer.parseInt(aTokenizer.nextToken());
-			long value = Long.parseLong(aTokenizer.nextToken());
+  public SensorValue(long aTimeStamp, long aSensorId, StringTokenizer aTokenizer) {
+	try {
+	  isValid = false;
+	  myAlarmValue = null;
+	  myTime = aTimeStamp;
+	  mySensorId = aSensorId;
+	  myValueIdx = Integer.parseInt(aTokenizer.nextToken());
+	  myType = Integer.parseInt(aTokenizer.nextToken());
+	  myDecimalPlaces = Integer.parseInt(aTokenizer.nextToken());
+
 //		Data type Description Note
 //		0	int6_t	Data type 6b (-31  ̧31)
 //		1	int14_t	Data type 14b (-8191  ̧8191)
@@ -36,55 +49,94 @@ public class SensorValue {
 //		13	int38_t		Reserved
 //		14	int38_t		Reserved
 //		15	int38_t		Reserved
-			switch (myType) {
-			case 0: // 0 int6_t Data type 6b (-31 ̧31)
-			case 1: // 1 int14_t Data type 14b (-8191 ̧8191)
-			case 4: // 4 int22_t Data type 22b (-2097151 ̧2097151)
-			case 8:
-				if (Math.abs(value) < 2097151) {
-					myValue = value / Math.pow(10, decimalPlaces);
-					isValid = true;
-				}
-				break;
-
-			}
-		} catch (Exception e) {
-			return;
+//      16  String      used for alarms
+	  switch (myType) {
+	  case 0: // 0 int6_t Data type 6b (-31 ̧31)
+	  case 1: // 1 int14_t Data type 14b (-8191 ̧8191)
+	  case 4: // 4 int22_t Data type 22b (-2097151 ̧2097151)
+	  case 8:
+		myRawVal = Long.parseLong(aTokenizer.nextToken());
+		if (Math.abs(myRawVal) < 2097151) {
+		  myValue = myRawVal / Math.pow(10, myDecimalPlaces);
+		  isValid = true;
 		}
-	}
-
-	public long getTime() {
-	  return this.myTime;
-	}
-
-	public long getSensorId() {
-	  return this.mySensorId;
-	}
-
-	public int getValueIdx() {
-		if (!isValid) {
-			throw new RuntimeException("cannot getValueIdx() for a invalid DataValue: " + this);
+		break;
+	  case 9:
+		myRawVal = Long.parseLong(aTokenizer.nextToken());
+		isValid = true;
+		break;
+	  case ALARM_TYPE:
+		if (mySensorId == 0 && myValueIdx == 15) {
+		  myAlarmValue = aTokenizer.nextToken();
+		  // ourLogger.severe("alarm:" + myAlarmValue);
+		  isValid = true;
 		}
-		return myValueIdx;
-	}
+		break;
+	  default:
+		// ourLogger.warning("unsupportet value type: " + myType);
+		aTokenizer.nextToken();
+		break;
 
-	public double getValue() {
-		if (!isValid) {
-			throw new RuntimeException("cannot getValue() for a invalid DataValue: " + this);
-		}
-		return myValue;
-	}
-
-	public boolean isValid() {
-		return isValid;
-	}
-
-	public boolean is(SensorValueDescription aSensorDescr) {
-	  boolean retVal = false;
-	  if (aSensorDescr != null && mySensorId == aSensorDescr.getId() && myValueIdx == aSensorDescr.getIndex()) {
-		retVal = true;
 	  }
-	  return retVal;
+	} catch (Exception e) {
+	  return;
 	}
+  }
+
+  public long getTime() {
+	return this.myTime;
+  }
+
+  public long getSensorId() {
+	return this.mySensorId;
+  }
+
+  public int getValueIdx() {
+	if (!isValid) {
+	  throw new RuntimeException("cannot getValueIdx() for a invalid DataValue: " + this);
+	}
+	return myValueIdx;
+  }
+
+  public double getValue() {
+	if (!isValid || myAlarmValue != null) {
+	  throw new RuntimeException("cannot getValue() for a invalid DataValue: " + this);
+	}
+	return myValue;
+  }
+
+  public boolean isValid() {
+	return isValid;
+  }
+
+  public String getAlarm() {
+	if (!isValid || myAlarmValue == null) {
+	  throw new RuntimeException("cannot getValue() for a invalid DataValue: " + this);
+	}
+	return myAlarmValue;
+  }
+
+  public boolean is(SensorValueDescription aSensorDescr) {
+	boolean retVal = false;
+	if (aSensorDescr != null && mySensorId == aSensorDescr.getId() && myValueIdx == aSensorDescr.getIndex()) {
+	  retVal = true;
+	}
+	return retVal;
+  }
+
+  public String toString() {
+	StringBuffer retVal = new StringBuffer();
+	retVal.append(SensorValue.class.getSimpleName());
+	retVal.append("[");
+	retVal.append(mySensorId);
+	retVal.append(",");
+	retVal.append(myValueIdx);
+	retVal.append(",");
+	retVal.append(myType);
+	retVal.append(",");
+	retVal.append(myRawVal);
+	retVal.append("]");
+	return retVal.toString();
+  }
 
 }

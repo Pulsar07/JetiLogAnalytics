@@ -1,5 +1,7 @@
 package de.so_fa.modellflug.jeti.jla.detectors;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -10,6 +12,7 @@ import de.so_fa.modellflug.jeti.jla.log.SensorValueDescription;
 
 public class FlightDetectorSignalStrength extends SensorObserverAdapter implements IFlightDetector {
   private static Logger ourLogger = Logger.getLogger(FlightDetectorSignalStrength.class.getName());
+//  private List<IFlightListener> myFlightListeners;
 
   private enum FlightState {
 	FLIGHT, NOFLIGHT
@@ -50,6 +53,11 @@ public class FlightDetectorSignalStrength extends SensorObserverAdapter implemen
 	  myValueDescrMap.put("A2", aDescr);
 	}
 
+  }
+
+  public FlightDetectorSignalStrength() {
+	super();
+//	myFlightListeners = new ArrayList<IFlightListener>();
   }
 
   @Override
@@ -105,16 +113,20 @@ public class FlightDetectorSignalStrength extends SensorObserverAdapter implemen
 	}
   }
 
-  private void flightDetection(long aTS, FlightState aType, boolean aEndFlightImmediately) {
-	if (aType == FlightState.FLIGHT && myFlightDetect == false) {
+  private void flightDetection(long aTS, FlightState aNewState, boolean aEndFlightImmediately) {
+	if (aNewState == FlightState.FLIGHT && myFlightDetect == false) {
 	  // flight start conditions are valid
 	  myFlightDetect = true;
 	  myStartTS = aTS;
+	  Flight.potentialFlightStart();
+//	  for (IFlightListener listener : myFlightListeners) {
+//		listener.flightStart();
+//	  }
 	}
-	if (aType == FlightState.FLIGHT) {
+	if (aNewState == FlightState.FLIGHT) {
 	  myEndTS = myNoFlightTS = 0;
 	}
-	if (aType == FlightState.NOFLIGHT && myFlightDetect == true) {
+	if (aNewState == FlightState.NOFLIGHT && myFlightDetect == true) {
 	  // flight end conditions are valid
 	  if (aEndFlightImmediately) {
 		myEndTS = aTS;
@@ -133,6 +145,9 @@ public class FlightDetectorSignalStrength extends SensorObserverAdapter implemen
 	  }
 	  Flight f = Model.get(myLogData.getModelName()).addFlight(Flight.FlightDetection.SIGNAL,
 		  myLogData.getLogTime().plusSeconds(myStartTS / 1000), duration);
+//	  for (IFlightListener listener : myFlightListeners) {
+//		listener.flightEnd(f);
+//	  }
 	  // ourLogger.severe(myLogData.getLogName() + " : flight detected: " + f);
 	  // ourLogger.severe("new flight\n at: " +
 	  // myLogData.getLogTime().plusSeconds(myStartTS / 1000) + "\n dura: " + duration
@@ -145,5 +160,4 @@ public class FlightDetectorSignalStrength extends SensorObserverAdapter implemen
   public void endOfLog() {
 	flightDetection(myCurrentTimestamp, FlightState.NOFLIGHT, true);
   }
-
 }

@@ -18,14 +18,14 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import de.so_fa.modellflug.jeti.jla.NLS;
-import de.so_fa.modellflug.jeti.jla.NLS.NLSKey;
 import de.so_fa.modellflug.jeti.jla.datamodel.Flight;
-import de.so_fa.modellflug.jeti.jla.datamodel.IFlightCreationObserver;
 import de.so_fa.modellflug.jeti.jla.datamodel.Model;
+import de.so_fa.modellflug.jeti.jla.detectors.IFlightListener;
 import de.so_fa.modellflug.jeti.jla.detectors.ISensorObserver;
+import de.so_fa.modellflug.jeti.jla.lang.NLS;
+import de.so_fa.modellflug.jeti.jla.lang.NLS.NLSKey;
 
-public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlightCreationObserver {
+public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlightListener {
 
   private final static Logger ourLogger = Logger.getLogger(JetiLogDataScanner.class.getName());
 
@@ -47,7 +47,7 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
   public static void addSensorObserver(ISensorObserver aObserver) {
 	ourSensorObservers.add(aObserver);
   }
-  
+
   public static void addNewLog(File aFile, File aFolder) {
 	// "20180531\\15-57-44.log";
 	// ToDo if (aFolder.getName().matches([]))
@@ -88,7 +88,7 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
   }
 
   public void analyse() {
-	Flight.addFlightCreationObserver(this);
+	Flight.addFlightListener(this);
 	// Open the file
 	FileInputStream fstream;
 	try {
@@ -109,67 +109,67 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
 			}
 		  }
 		} else {
-		  scanLogLine(strLine);
+		  scanLogLine(strLine, lineCnt+1);
 		}
 
 		lineCnt++;
 	  }
 
 	  myLogDuration = (int) (myActualTime / 1000);
-	  
+
 	  for (ISensorObserver sensorObserver : ourSensorObservers) {
 		sensorObserver.endOfLog();
 	  }
 
 	  // Close the input stream
 	  fstream.close();
-	  Flight.deleteFlightCreationObserver(this);
+	  Flight.removeFlightListener(this);
 	} catch (IOException e) {
 	  ourLogger.log(Level.SEVERE, "problems analyising log data: " + myLogFile.getAbsolutePath(), e);
 	}
   }
 
-  private void scanLogLine(String aLine) {
+  private void scanLogLine(String aLine, int aLineNumber) {
 	try {
-	StringTokenizer tokenizer = new StringTokenizer(aLine, ";");
-	long timeStamp = Long.parseLong(tokenizer.nextToken());
-	String idToken = tokenizer.nextToken();
-	idToken = idToken.replace(' ', '0');
-	long sensorId = Long.parseLong(idToken);
-	if (HEADER == timeStamp) { // == 0000000000
-	  parseLogHeader(timeStamp, sensorId, tokenizer);
-	} else {
-	  if (!isHeaderScanFinished) {
-		myStartOffset = timeStamp;
+	  if (aLineNumber == 20509) {
+		int i = 0;
+		i++;
 	  }
-	  isHeaderScanFinished = true;
-	  myActualTime = timeStamp - myStartOffset;
-
-	  // read all 4-tupels till end of line / end of tokens
-	  while (tokenizer.hasMoreTokens()) {
-		SensorValue value = new SensorValue(myActualTime, sensorId, tokenizer);
-		if (!value.isValid()) {
-		  continue;
+	  StringTokenizer tokenizer = new StringTokenizer(aLine, ";");
+	  long timeStamp = Long.parseLong(tokenizer.nextToken());
+	  String idToken = tokenizer.nextToken();
+	  idToken = idToken.replace(' ', '0');
+	  long sensorId = Long.parseLong(idToken);
+	  if (HEADER == timeStamp) { // == 0000000000
+		parseLogHeader(timeStamp, sensorId, tokenizer);
+	  } else {
+		if (!isHeaderScanFinished) {
+		  myStartOffset = timeStamp;
 		}
-		
-		if (value.getSensorId() == 4390522048L && value.getValueIdx() == 2) {
-		  int i = 0;
-		  i++;
-		}
+		isHeaderScanFinished = true;
+		myActualTime = timeStamp - myStartOffset;
 
-		// now call all sensor observers, if the sensor value is matching
-		for (ISensorObserver sensorObserver : ourSensorObservers) {
-		  for (SensorValueDescription descr : sensorObserver.getSensorDescr()) {
-			if (value.is(descr)) {
-			  // ourLogger.severe("observers matched value: " + sensorObserver);
-			  sensorObserver.valueMatch(value);
+		// read all 4-tupels till end of line / end of tokens
+		while (tokenizer.hasMoreTokens()) {
+		  SensorValue value = new SensorValue(myActualTime, sensorId, tokenizer);
+		  if (!value.isValid()) {
+			// ourLogger.severe(""+ getLogName()+ ":" + aLineNumber + ": invalid " + value);
+			continue;
+		  }
+
+		  // now call all sensor observers, if the sensor value is matching
+		  for (ISensorObserver sensorObserver : ourSensorObservers) {
+			for (SensorValueDescription descr : sensorObserver.getSensorDescr()) {
+			  if (value.is(descr)) {
+				// ourLogger.severe("observers matched value: " + sensorObserver);
+				sensorObserver.valueMatch(value);
+			  }
 			}
 		  }
 		}
+		// DATA
+		return;
 	  }
-	  // DATA
-	  return;
-	}
 	} catch (NumberFormatException e) {
 	  ourLogger.severe("ignoring reading line: " + aLine);
 	}
@@ -207,9 +207,11 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
 
 	for (ISensorObserver sensorObserver : ourSensorObservers) {
 	  Pattern p = sensorObserver.getSensorNamePattern();
-	  Matcher m = p.matcher(descr.getName().toLowerCase());
-	  if (m.matches()) {
-		sensorObserver.nameMatch(descr);
+	  if (null != p) {
+		Matcher m = p.matcher(descr.getName().toLowerCase());
+		if (m.matches()) {
+		  sensorObserver.nameMatch(descr);
+		}
 	  }
 	}
   }
@@ -250,7 +252,9 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
 	Collections.sort(myLogDataList);
 	for (JetiLogDataScanner data : myLogDataList) {
 	  try {
+		ourLogger.info("scanning :" + data.getLogFolder().getName() + "/" + data.getLogFile().getName());
 		data.analyse();
+		ourLogger.info("scanning data : model: " + data.getModelName() + ", flightcnt: " + data.getFlightCnt());
 		System.out.println("  " + NLS.get(NLSKey.SCAN_LOG) + ": " + data.getLogFolder().getName() + "/"
 			+ data.getLogFile().getName() + " : " + NLS.get(NLSKey.MODEL) + ": " + data.getModelName() + ", "
 			+ NLS.get(NLSKey.FLIGHT_COUNT) + ": " + data.getFlightCnt());
@@ -276,8 +280,6 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
   private File getLogFile() {
 	return myLogFile;
   }
-
-
 
   @Override
   public int compareTo(JetiLogDataScanner aT) {
@@ -314,7 +316,13 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
   }
 
   @Override
-  public void notifyNewFlight(Flight aFlight) {
+  public void flightStart() {
+	// TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void flightEnd(Flight aF) {
 	myFlightCnt++;
   }
 

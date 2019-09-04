@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import de.so_fa.modellflug.jeti.jla.NLS;
-import de.so_fa.modellflug.jeti.jla.NLS.NLSKey;
 import de.so_fa.modellflug.jeti.jla.datamodel.Flight.FlightDetection;
+import de.so_fa.modellflug.jeti.jla.lang.NLS;
+import de.so_fa.modellflug.jeti.jla.lang.NLS.NLSKey;
 import de.so_fa.modellflug.jeti.jla.log.JetiLogDataScanner;
 import de.so_fa.modellflug.jeti.jla.log.TimeDuration;
 import de.so_fa.utils.log.MyLogger;
