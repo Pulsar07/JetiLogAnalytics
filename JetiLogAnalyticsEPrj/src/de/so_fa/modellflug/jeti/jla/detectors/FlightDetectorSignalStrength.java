@@ -57,7 +57,6 @@ public class FlightDetectorSignalStrength extends SensorObserverAdapter implemen
 
   public FlightDetectorSignalStrength() {
 	super();
-//	myFlightListeners = new ArrayList<IFlightListener>();
   }
 
   @Override
@@ -99,13 +98,13 @@ public class FlightDetectorSignalStrength extends SensorObserverAdapter implemen
 	mySmoothedSignalStrength = strength + 0.96 * (mySmoothedSignalStrength - strength);
 
 	if (mySmoothedSignalStrength < 17 && myFlightDetect == false) {
-	  // ourLogger.severe(" signal strenght flight ON: " + mySmoothedSignalStrength +
+	  // ourLogger.severe(" signal strength flight ON: " + mySmoothedSignalStrength +
 	  // " at: "
 	  // + TimeDuration.getString(myCurrentTimestamp / 1000));
 	  flightDetection(myCurrentTimestamp, FlightState.FLIGHT, false);
 	}
 	if (mySmoothedSignalStrength > 17.9 && myFlightDetect == true) {
-	  // ourLogger.severe(" signal strenght flight OFF: " + mySmoothedSignalStrength +
+	  // ourLogger.severe(" signal strength flight OFF: " + mySmoothedSignalStrength +
 	  // " at: "
 	  // + TimeDuration.getString(myCurrentTimestamp / 1000));
 	  flightDetection(myCurrentTimestamp, FlightState.NOFLIGHT, false);
@@ -119,9 +118,6 @@ public class FlightDetectorSignalStrength extends SensorObserverAdapter implemen
 	  myFlightDetect = true;
 	  myStartTS = aTS;
 	  Flight.potentialFlightStart();
-//	  for (IFlightListener listener : myFlightListeners) {
-//		listener.flightStart();
-//	  }
 	}
 	if (aNewState == FlightState.FLIGHT) {
 	  myEndTS = myNoFlightTS = 0;
@@ -145,13 +141,7 @@ public class FlightDetectorSignalStrength extends SensorObserverAdapter implemen
 	  }
 	  Flight f = Model.get(myLogData.getModelName()).addFlight(Flight.FlightDetection.SIGNAL,
 		  myLogData.getLogTime().plusSeconds(myStartTS / 1000), duration);
-//	  for (IFlightListener listener : myFlightListeners) {
-//		listener.flightEnd(f);
-//	  }
-	  // ourLogger.severe(myLogData.getLogName() + " : flight detected: " + f);
-	  // ourLogger.severe("new flight\n at: " +
-	  // myLogData.getLogTime().plusSeconds(myStartTS / 1000) + "\n dura: " + duration
-	  // );
+	  f.setLogName(myLogData.getLogName());
 	}
 
   }

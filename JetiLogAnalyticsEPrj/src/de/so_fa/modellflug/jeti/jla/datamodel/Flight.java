@@ -3,6 +3,7 @@ package de.so_fa.modellflug.jeti.jla.datamodel;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -11,6 +12,7 @@ import de.so_fa.modellflug.jeti.jla.detectors.IFlightListener;
 import de.so_fa.modellflug.jeti.jla.lang.NLS;
 import de.so_fa.modellflug.jeti.jla.lang.NLS.NLSKey;
 import de.so_fa.modellflug.jeti.jla.log.TimeDuration;
+import de.so_fa.utils.log.MyLogger;
 
 public class Flight {
   public static final Logger ourLogger = Logger.getLogger(Flight.class.getName());
@@ -29,6 +31,7 @@ public class Flight {
   int myVnorm = 0;
   FlightDetection myDetectionType;
   Map<String, Integer> myAlarms;
+  private String myLogName;
 
   public int getAvgSpeed() {
 	return this.myAvgSpeed;
@@ -120,6 +123,9 @@ public class Flight {
 	out.append("      " + NLS.get(NLSKey.FLIGHT_DETECTION_TYPE, identation) + ": ");
 	out.append(myDetectionType);
 	out.append("\n");
+	out.append("      " + NLS.get(NLSKey.LOG_FILE, identation) + ": ");
+	out.append(myLogName);
+	out.append("\n");
 	out.append("      " + NLS.get(NLSKey.FLIGHTDURATION, identation) + ": ");
 	out.append((new TimeDuration(myFlightDuration)).toString());
 	out.append("\n");
@@ -142,7 +148,9 @@ public class Flight {
 	}
 	if (myAlarms != null && !myAlarms.isEmpty()) {
 	  out.append("      " + NLS.get(NLSKey.ALARMS) + ":\n");
-	  for (String alarm: myAlarms.keySet()) {
+	  List<String> alarmList = new ArrayList<String>(myAlarms.keySet());
+	  alarmList.sort(Comparator.naturalOrder());
+	  for (String alarm : alarmList) {
 		  out.append("        " + NLS.fillWithBlanks(alarm, 20) + ": " + myAlarms.get(alarm));
 		  out.append("\n");
 	  }
@@ -159,5 +167,9 @@ public class Flight {
 	for (String alarm: myAlarms.keySet()) {
 	  myModel.setAlarm(alarm, myAlarms.get(alarm));
 	}
+  }
+
+  public void setLogName(String aName) {
+	myLogName = aName;
   }
 }

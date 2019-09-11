@@ -39,8 +39,10 @@ public class JetiLogAnalytics {
    * 
    * 0.1.9 : 09/2019 RS : added
    * AlarmDetector to show alarms per flight / model / overall
+   * 
+   * 0.1.10 : 09/2019 RS : some beautifications in format of result output
    */
-  private static final String VERSION = "0.1.9";
+  private static final String VERSION = "0.1.10";
   private static final String APP_NAME = "JetiLogAnalytics";
   private final static Logger ourLogger = Logger.getLogger(JetiLogAnalytics.class.getName());
   static File ourFolder;
@@ -85,7 +87,7 @@ public class JetiLogAnalytics {
 	  LocalDate toDate = null;
 
 	  if (false) {
-		// for local esting purposes
+		// for local testing purposes
 		logFolderName = "/home/stransky/Links/Modellflug/JETI/log/Log";
 
 		fromDate = LocalDate.of(2019, 5, 2);

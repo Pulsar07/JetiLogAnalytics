@@ -5,6 +5,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -148,7 +149,10 @@ public class Model {
 	out.append(System.getProperty("line.separator"));
 	if (myAlarms != null && !myAlarms.isEmpty()) {
 	  out.append("  " + NLS.get(NLSKey.ALARMS) + ":\n");
-	  for (String alarm : myAlarms.keySet()) {
+	  
+	  List<String> alarmList = new ArrayList<String>(myAlarms.keySet());
+	  alarmList.sort(Comparator.naturalOrder());
+	  for (String alarm : alarmList) {
 		out.append("    " + NLS.fillWithBlanks(alarm, 24) + ": " + myAlarms.get(alarm));
 		out.append(System.getProperty("line.separator"));
 	  }
@@ -188,12 +192,13 @@ public class Model {
 	int timeFlights = 0;
 	int timeLogs = 0;
 	Map<String, Integer> allAlarms = new HashMap<String, Integer>();
-	StringBuffer result = new StringBuffer();
-	result.append("\n" + NLS.get(NLSKey.MODEL_STATISTIC) + " (" + Model.getModelCollection().size() + " "
-		+ NLS.get(NLSKey.MODELS) + "):");
-	System.out.println(result);
+	StringBuffer modelOut = new StringBuffer();
+	modelOut.append("\n" + NLS.get(NLSKey.MODEL_STATISTIC) + " (" + Model.getModelCollection().size() + " "
+		+ NLS.get(NLSKey.MODELS) + "):\n");
+	// System.out.println(out);
 	for (Model model : Model.getModelCollection()) {
-	  System.out.println(model);
+	  modelOut.append(model);
+	  // System.out.println(model);
 	  ourLogger.info(model.toString());
 	  cntLog += model.getLogCount();
 	  timeLogs += model.getLogTime();
@@ -212,33 +217,37 @@ public class Model {
 	}
 
 	int indentation = 30;
-	result = new StringBuffer();
-	result.append("\n" + NLS.get(NLSKey.STATISTIC_TOTAL, indentation+2) + ":");
-	result.append("\n");
-	result.append("  " + NLS.fillWithBlanks(NLS.get(NLSKey.LOG_COUNT) + " " + NLS.get(NLSKey.TOTAL), indentation) + ": "
+	StringBuffer totalOut = new StringBuffer();
+	totalOut.append("\n" + NLS.get(NLSKey.STATISTIC_TOTAL, indentation+2) + ":");
+	totalOut.append("\n");
+	totalOut.append("  " + NLS.fillWithBlanks(NLS.get(NLSKey.LOG_COUNT) + " " + NLS.get(NLSKey.TOTAL), indentation) + ": "
 		+ cntLog);
-	result.append("\n");
-	result.append("  " + NLS.fillWithBlanks(NLS.get(NLSKey.LOGDURATION) + " " + NLS.get(NLSKey.TOTAL), indentation)
+	totalOut.append("\n");
+	totalOut.append("  " + NLS.fillWithBlanks(NLS.get(NLSKey.LOGDURATION) + " " + NLS.get(NLSKey.TOTAL), indentation)
 		+ ": " + TimeDuration.getString(timeLogs));
-	result.append("\n");
-	result.append(
+	totalOut.append("\n");
+	totalOut.append(
 		"  " + NLS.fillWithBlanks(NLS.get(NLSKey.MODEL_COUNT), indentation) + ": " + ourModels.entrySet().size());
-	result.append("\n");
-	result.append("  " + NLS.fillWithBlanks(NLS.get(NLSKey.FLIGHT_COUNT) + " " + NLS.get(NLSKey.TOTAL), indentation)
+	totalOut.append("\n");
+	totalOut.append("  " + NLS.fillWithBlanks(NLS.get(NLSKey.FLIGHT_COUNT) + " " + NLS.get(NLSKey.TOTAL), indentation)
 		+ ": " + cntFlights);
-	result.append("\n");
-	result.append("  " + NLS.fillWithBlanks(NLS.get(NLSKey.FLIGHTDURATION) + " " + NLS.get(NLSKey.TOTAL), indentation)
+	totalOut.append("\n");
+	totalOut.append("  " + NLS.fillWithBlanks(NLS.get(NLSKey.FLIGHTDURATION) + " " + NLS.get(NLSKey.TOTAL), indentation)
 		+ ": " + TimeDuration.getString(timeFlights));
-	result.append("\n");
+	totalOut.append("\n");
 	if (allAlarms != null && !allAlarms.isEmpty()) {
-	  result.append("  " + NLS.get(NLSKey.ALARMS, indentation) + ":\n");
-	  for (String alarm : allAlarms.keySet()) {
-		result.append("    " + NLS.fillWithBlanks(alarm, indentation-2) + ": " + allAlarms.get(alarm));
-		result.append(System.getProperty("line.separator"));
+	  totalOut.append("  " + NLS.get(NLSKey.ALARMS, indentation) + ":\n");
+	  List<String> alarmList = new ArrayList<String>(allAlarms.keySet());
+	  alarmList.sort(Comparator.naturalOrder());
+	  for (String alarm : alarmList) {
+		totalOut.append("    " + NLS.fillWithBlanks(alarm, indentation-2) + ": " + allAlarms.get(alarm));
+		totalOut.append(System.getProperty("line.separator"));
 	  }
 	}
-	System.out.println(result);
-	ourLogger.info(result.toString());
+	ourLogger.info(totalOut.toString());
+
+	System.out.println(totalOut);
+	System.out.println(modelOut);
 
   }
 
