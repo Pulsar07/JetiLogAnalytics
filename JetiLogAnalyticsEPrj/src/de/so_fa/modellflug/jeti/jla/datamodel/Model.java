@@ -27,6 +27,23 @@ public class Model {
   private List<Flight> myFlightList = new ArrayList<Flight>();
   private int myMaxHeight;
   private int myMaxSpeed;
+  Map<String, Integer> myAlarms = new HashMap<String, Integer>();
+
+  public void setAlarm(String aName) {
+	setAlarm(aName, 1);
+  }
+
+  public void setAlarm(String aName, int aCount) {
+	int alarmCount = 0;
+	if (myAlarms.containsKey(aName)) {
+	  alarmCount = myAlarms.get(aName);
+	}
+	myAlarms.put(aName, alarmCount + aCount);
+  }
+
+  public Map<String, Integer> getAlarms() {
+	return Collections.unmodifiableMap(myAlarms);
+  }
 
   private Model(String aName) {
 	myName = aName;
@@ -90,7 +107,8 @@ public class Model {
 	  f = myFlightList.get(myFlightList.size() - 1);
 	}
 
-	if (null != f && Math.abs((f.getStartTime().atZone(ZoneId.systemDefault()).toEpochSecond() - aTime.atZone(ZoneId.systemDefault()).toEpochSecond())) < 20) {
+	if (null != f && Math.abs((f.getStartTime().atZone(ZoneId.systemDefault()).toEpochSecond()
+		- aTime.atZone(ZoneId.systemDefault()).toEpochSecond())) < 20) {
 	  // an other detector has created this flight, so ad only the attributes missing
 	  ourLogger.info("resusing flight: " + f);
 	} else {
@@ -128,9 +146,19 @@ public class Model {
 	out.append("  " + NLS.fillWithBlanks(NLS.get(NLSKey.LOGDURATION) + " " + NLS.get(NLSKey.TOTAL), identation) + ": ");
 	out.append(TimeDuration.getString(this.getLogTime()));
 	out.append(System.getProperty("line.separator"));
+	if (myAlarms != null && !myAlarms.isEmpty()) {
+	  out.append("  " + NLS.get(NLSKey.ALARMS) + ":\n");
+	  for (String alarm : myAlarms.keySet()) {
+		out.append("    " + NLS.fillWithBlanks(alarm, 24) + ": " + myAlarms.get(alarm));
+		out.append(System.getProperty("line.separator"));
+	  }
+	}
+	out.append("  " + NLS.get(NLSKey.FLIGHTS, identation) + ":");
+	out.append(System.getProperty("line.separator"));
 	for (Flight f : this.getFlights()) {
 	  out.append(f);
 	}
+
 	return out.toString();
   }
 
@@ -159,6 +187,7 @@ public class Model {
 	int cntFlights = 0;
 	int timeFlights = 0;
 	int timeLogs = 0;
+	Map<String, Integer> allAlarms = new HashMap<String, Integer>();
 	StringBuffer result = new StringBuffer();
 	result.append("\n" + NLS.get(NLSKey.MODEL_STATISTIC) + " (" + Model.getModelCollection().size() + " "
 		+ NLS.get(NLSKey.MODELS) + "):");
@@ -170,11 +199,21 @@ public class Model {
 	  timeLogs += model.getLogTime();
 	  cntFlights += model.getFlightCount();
 	  timeFlights += model.getFlightTime();
+	  Map<String, Integer> alarmMap = model.getAlarms();
+	  if (alarmMap != null && !alarmMap.isEmpty()) {
+		for (String alarm : alarmMap.keySet()) {
+		  int alarmCount = 0;
+		  if (allAlarms.containsKey(alarm)) {
+			alarmCount = allAlarms.get(alarm);
+		  }
+		  allAlarms.put(alarm, alarmCount + alarmMap.get(alarm));
+		}
+	  }
 	}
 
-	int indentation = 26;
+	int indentation = 30;
 	result = new StringBuffer();
-	result.append("\n" + NLS.get(NLSKey.STATISTIC_TOTAL) + ":");
+	result.append("\n" + NLS.get(NLSKey.STATISTIC_TOTAL, indentation+2) + ":");
 	result.append("\n");
 	result.append("  " + NLS.fillWithBlanks(NLS.get(NLSKey.LOG_COUNT) + " " + NLS.get(NLSKey.TOTAL), indentation) + ": "
 		+ cntLog);
@@ -191,6 +230,13 @@ public class Model {
 	result.append("  " + NLS.fillWithBlanks(NLS.get(NLSKey.FLIGHTDURATION) + " " + NLS.get(NLSKey.TOTAL), indentation)
 		+ ": " + TimeDuration.getString(timeFlights));
 	result.append("\n");
+	if (allAlarms != null && !allAlarms.isEmpty()) {
+	  result.append("  " + NLS.get(NLSKey.ALARMS, indentation) + ":\n");
+	  for (String alarm : allAlarms.keySet()) {
+		result.append("    " + NLS.fillWithBlanks(alarm, indentation-2) + ": " + allAlarms.get(alarm));
+		result.append(System.getProperty("line.separator"));
+	  }
+	}
 	System.out.println(result);
 	ourLogger.info(result.toString());
 

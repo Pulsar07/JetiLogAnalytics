@@ -31,12 +31,16 @@ public class JetiLogAnalytics {
    * Version history:
    * 
    * 0.1.7 : 08/2019 RS : refactored JetiLogDataScanner with support for
-   * ISensorObserver interface 0.1.8 : 08/2019 RS : some ignore/fix "holes" in
-   * time stamp and sensor id as in some old log files existing recalculate
-   * different sensor value units (m/s, mpt, ft) to the ISO system units km/h and
-   * m 0.1.9 : 09/2019 RS : added AlarmDetector to show alarms per flight / model
+   * ISensorObserver interface
+   * 
+   * 0.1.8 : 08/2019 RS : some ignore/fix "holes" in time stamp and sensor id as
+   * in some old log files existing recalculate different sensor value units (m/s,
+   * mpt, ft) to the ISO system units km/h and m 
+   * 
+   * 0.1.9 : 09/2019 RS : added
+   * AlarmDetector to show alarms per flight / model / overall
    */
-  private static final String VERSION = "0.1.8";
+  private static final String VERSION = "0.1.9";
   private static final String APP_NAME = "JetiLogAnalytics";
   private final static Logger ourLogger = Logger.getLogger(JetiLogAnalytics.class.getName());
   static File ourFolder;
@@ -79,14 +83,14 @@ public class JetiLogAnalytics {
 
 	  LocalDate fromDate = null;
 	  LocalDate toDate = null;
-	  
+
 	  if (false) {
 		// for local esting purposes
 		logFolderName = "/home/stransky/Links/Modellflug/JETI/log/Log";
 
 		fromDate = LocalDate.of(2019, 5, 2);
 		toDate = LocalDate.of(2019, 5, 2);
-		fromDate = LocalDate.of(2019, 9, 1);
+		fromDate = LocalDate.of(2019, 5, 1);
 		toDate = null;
 	  }
 

@@ -15,9 +15,9 @@ public class NLS {
   private static Map<NLSKey, String> ourMLMap = ourEN;
 
   public static enum NLSKey {
-	KEY_READLOG, SCAN_LOG, FLIGHT_COUNT, MODEL, MODELS, MAX_HEIGHT, MAX_SPEED, AVG_SPEED, NORM_SPEED,
-	STATISTIC_TOTAL, FLIGHT, FLIGHT_DETECTION_TYPE, FLIGHTDURATION, LOG_COUNT, TOTAL, LOGDURATION, MODEL_COUNT, LOG_FOLDER_NOT_AS_EXPECTED,
-	LOG_FILE_NOT_AS_EXPECTED, MODEL_STATISTIC, ALARMS
+	KEY_READLOG, SCAN_LOG, FLIGHT_COUNT, MODEL, MODELS, MAX_HEIGHT, MAX_SPEED, AVG_SPEED, NORM_SPEED, STATISTIC_TOTAL,
+	FLIGHT, FLIGHTS, FLIGHT_DETECTION_TYPE, FLIGHTDURATION, LOG_COUNT, TOTAL, LOGDURATION, MODEL_COUNT,
+	LOG_FOLDER_NOT_AS_EXPECTED, LOG_FILE_NOT_AS_EXPECTED, MODEL_STATISTIC, ALARMS
   }
 
   {
@@ -33,9 +33,12 @@ public class NLS {
 	ourEN.put(NLSKey.FLIGHT, "flight");
 	ourDE.put(NLSKey.FLIGHT, "Flug");
 
+	ourEN.put(NLSKey.FLIGHTS, "flights");
+	ourDE.put(NLSKey.FLIGHTS, "Flüge");
+
 	ourEN.put(NLSKey.FLIGHT_DETECTION_TYPE, "detection type");
 	ourDE.put(NLSKey.FLIGHT_DETECTION_TYPE, "Erkennungstyp");
-	
+
 	ourEN.put(NLSKey.STATISTIC_TOTAL, "Statisic total");
 	ourDE.put(NLSKey.STATISTIC_TOTAL, "Gesamtstatistik");
 
@@ -74,10 +77,10 @@ public class NLS {
 
 	ourEN.put(NLSKey.MODEL, "model");
 	ourDE.put(NLSKey.MODEL, "Modell");
-	
+
 	ourEN.put(NLSKey.MODELS, "models");
 	ourDE.put(NLSKey.MODELS, "Modelle");
-	
+
 	ourEN.put(NLSKey.TOTAL, "total");
 	ourDE.put(NLSKey.TOTAL, "gesamt");
 
@@ -97,18 +100,18 @@ public class NLS {
   NLS() {
 	ourMLMap = ourEN;
   }
-  
+
   public void setLang(NLSLang aLang) {
 	if (aLang == NLSLang.DE) {
 	  ourMLMap = ourDE;
 	}
   }
 
-  public static  String get(NLSKey aKey) {
-    return getInstance().getString(aKey);
+  public static String get(NLSKey aKey) {
+	return getInstance().getString(aKey);
   }
 
-  public static  String get(NLSKey aKey, int aFillBlanksTill) {
+  public static String get(NLSKey aKey, int aFillBlanksTill) {
 	return fillWithBlanks(get(aKey), aFillBlanksTill);
   }
 
@@ -118,8 +121,9 @@ public class NLS {
 	while (retVal.length() < aFillBlanksTill) {
 	  retVal.append(" ");
 	}
-    return retVal.toString();
+	return retVal.toString();
   }
+
   public String getString(NLSKey aKey) {
 	if (ourMLMap.containsKey(aKey)) {
 	  return ourMLMap.get(aKey);

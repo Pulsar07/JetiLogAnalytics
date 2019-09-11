@@ -32,7 +32,7 @@ public class SpeedDetector extends SensorObserverAdapter implements IFlightListe
 
   public void newLogData(JetiLogDataScanner aLogData) {
 	super.newLogData(aLogData);
-	System.out.println("new VDistro");
+	// System.out.println("new VDistro");
 
 	myVDistro = new int[300];
   }

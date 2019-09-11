@@ -112,38 +112,38 @@ public class Flight {
   public String toString() {
 	DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-	int identation = 24;
+	int identation = 22;
 	StringBuffer out = new StringBuffer();
-	out.append("  " + NLS.get(NLSKey.FLIGHT, identation) + "  : ");
+	out.append("    " + NLS.get(NLSKey.FLIGHT, identation) + "  : ");
 	out.append(myStartTime.format(timeFormat));
 	out.append("\n");
-	out.append("    " + NLS.get(NLSKey.FLIGHT_DETECTION_TYPE, identation) + ": ");
+	out.append("      " + NLS.get(NLSKey.FLIGHT_DETECTION_TYPE, identation) + ": ");
 	out.append(myDetectionType);
 	out.append("\n");
-	out.append("    " + NLS.get(NLSKey.FLIGHTDURATION, identation) + ": ");
+	out.append("      " + NLS.get(NLSKey.FLIGHTDURATION, identation) + ": ");
 	out.append((new TimeDuration(myFlightDuration)).toString());
 	out.append("\n");
 	if (myMaxHeight > 20) {
-	  out.append("    " + NLS.get(NLSKey.MAX_HEIGHT, identation) + ": ");
+	  out.append("      " + NLS.get(NLSKey.MAX_HEIGHT, identation) + ": ");
 	  out.append(myMaxHeight);
 	  out.append("\n");
 	}
 	if (myAvgSpeed > 10) {
-	  out.append("    " + NLS.get(NLSKey.NORM_SPEED, identation) + ": ");
+	  out.append("      " + NLS.get(NLSKey.NORM_SPEED, identation) + ": ");
 	  out.append(myVnorm);
 	  out.append("\n");
-	  out.append("    " + NLS.get(NLSKey.AVG_SPEED, identation) + ": ");
+	  out.append("      " + NLS.get(NLSKey.AVG_SPEED, identation) + ": ");
 	  out.append(myAvgSpeed);
 	  out.append("\n");
-	  out.append("    " + NLS.get(NLSKey.MAX_SPEED, identation) + ": ");
+	  out.append("      " + NLS.get(NLSKey.MAX_SPEED, identation) + ": ");
 	  out.append(myMaxSpeed);
 	  out.append("\n");
 	  
 	}
 	if (myAlarms != null && !myAlarms.isEmpty()) {
-	  out.append("    " + NLS.get(NLSKey.ALARMS) + ":\n");
+	  out.append("      " + NLS.get(NLSKey.ALARMS) + ":\n");
 	  for (String alarm: myAlarms.keySet()) {
-		  out.append("      " + NLS.fillWithBlanks(alarm, 22) + ": " + myAlarms.get(alarm));
+		  out.append("        " + NLS.fillWithBlanks(alarm, 20) + ": " + myAlarms.get(alarm));
 		  out.append("\n");
 	  }
 	}
@@ -152,6 +152,12 @@ public class Flight {
   }
 
   public void setAlarms(Map<String, Integer> aAlarms) {
+	if (null == aAlarms) {
+	  return;
+	}
 	myAlarms = aAlarms;
+	for (String alarm: myAlarms.keySet()) {
+	  myModel.setAlarm(alarm, myAlarms.get(alarm));
+	}
   }
 }
