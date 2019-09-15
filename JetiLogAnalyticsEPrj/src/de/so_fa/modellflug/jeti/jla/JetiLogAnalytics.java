@@ -41,8 +41,10 @@ public class JetiLogAnalytics {
    * AlarmDetector to show alarms per flight / model / overall
    * 
    * 0.1.10 : 09/2019 RS : some beautifications in format of result output
+   * 
+   * 0.1.11 : 09/2019 RS : bugfix in class FlightDetectorSignalStrength, fixed initialization bug for switching log files
    */
-  private static final String VERSION = "0.1.10";
+  private static final String VERSION = "0.1.11";
   private static final String APP_NAME = "JetiLogAnalytics";
   private final static Logger ourLogger = Logger.getLogger(JetiLogAnalytics.class.getName());
   static File ourFolder;
@@ -86,13 +88,13 @@ public class JetiLogAnalytics {
 	  LocalDate fromDate = null;
 	  LocalDate toDate = null;
 
-	  if (false) {
+	  if (true) {
 		// for local testing purposes
+		logFolderName = "/home/stransky/Downloads/jlog";
 		logFolderName = "/home/stransky/Links/Modellflug/JETI/log/Log";
-
 		fromDate = LocalDate.of(2019, 5, 2);
 		toDate = LocalDate.of(2019, 5, 2);
-		fromDate = LocalDate.of(2019, 5, 1);
+		fromDate = LocalDate.of(2019, 9, 13);
 		toDate = null;
 	  }
 

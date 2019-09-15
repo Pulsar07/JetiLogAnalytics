@@ -9,6 +9,7 @@ import de.so_fa.modellflug.jeti.jla.datamodel.Flight;
 import de.so_fa.modellflug.jeti.jla.datamodel.Model;
 import de.so_fa.modellflug.jeti.jla.log.SensorValue;
 import de.so_fa.modellflug.jeti.jla.log.SensorValueDescription;
+import de.so_fa.modellflug.jeti.jla.log.TimeDuration;
 
 public class FlightDetectorSignalStrength extends SensorObserverAdapter implements IFlightDetector {
   private static Logger ourLogger = Logger.getLogger(FlightDetectorSignalStrength.class.getName());
@@ -37,6 +38,16 @@ public class FlightDetectorSignalStrength extends SensorObserverAdapter implemen
   // 000000000;4379323544;4;Q;%
   // 000000000;4199312918;0;VarioGPS;
 
+  private void init() {
+	mySignalStrength_A1 = -10;
+	mySignalStrength_A2 = -10;
+	mySmoothedSignalStrength = 18;
+	myFlightDetect = false;
+	myStartTS = 0;
+	myEndTS = 0;
+	myNoFlightTS = 0;
+  }
+
   @Override
   public Pattern getSensorNamePattern() {
 	return Pattern.compile("A[1|2]", Pattern.CASE_INSENSITIVE);
@@ -44,6 +55,9 @@ public class FlightDetectorSignalStrength extends SensorObserverAdapter implemen
 
   @Override
   public void nameMatch(SensorValueDescription aDescr) {
+	// this is called each time a new log file is scanned, so force initialization of local variables
+	init();
+	
 	// ourLogger.severe("" + aDescr.getName());
 	if (aDescr.getName().equals("A1")) {
 	  myValueDescrMap.put("A1", aDescr);
@@ -96,11 +110,13 @@ public class FlightDetectorSignalStrength extends SensorObserverAdapter implemen
 	// see:
 	// https://en.wikipedia.org/wiki/Low-pass_filter#Simple_infinite_impulse_response_filter
 	mySmoothedSignalStrength = strength + 0.96 * (mySmoothedSignalStrength - strength);
-
-	if (mySmoothedSignalStrength < 17 && myFlightDetect == false) {
-	  // ourLogger.severe(" signal strength flight ON: " + mySmoothedSignalStrength +
-	  // " at: "
-	  // + TimeDuration.getString(myCurrentTimestamp / 1000));
+//	 ourLogger.severe(" signal strength: " + mySmoothedSignalStrength +
+//		   " at: "
+//		   + TimeDuration.getString(myCurrentTimestamp / 1000));
+	if (mySmoothedSignalStrength < 15 && myFlightDetect == false) {
+//	   ourLogger.severe(" signal strength flight ON: " + mySmoothedSignalStrength +
+//	   " at: "
+//	   + TimeDuration.getString(myCurrentTimestamp / 1000));
 	  flightDetection(myCurrentTimestamp, FlightState.FLIGHT, false);
 	}
 	if (mySmoothedSignalStrength > 17.9 && myFlightDetect == true) {
