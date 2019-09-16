@@ -88,7 +88,7 @@ public class JetiLogAnalytics {
 	  LocalDate fromDate = null;
 	  LocalDate toDate = null;
 
-	  if (true) {
+	  if (false) {
 		// for local testing purposes
 		logFolderName = "/home/stransky/Downloads/jlog";
 		logFolderName = "/home/stransky/Links/Modellflug/JETI/log/Log";
