@@ -43,8 +43,10 @@ public class JetiLogAnalytics {
    * 0.1.10 : 09/2019 RS : some beautifications in format of result output
    * 
    * 0.1.11 : 09/2019 RS : bugfix in class FlightDetectorSignalStrength, fixed initialization bug for switching log files
+   * 
+   * 0.1.12 : 09/2019 RS : bugfix SpeedDetector initialize vars in flightStart()
    */
-  private static final String VERSION = "0.1.11";
+  private static final String VERSION = "0.1.12";
   private static final String APP_NAME = "JetiLogAnalytics";
   private final static Logger ourLogger = Logger.getLogger(JetiLogAnalytics.class.getName());
   static File ourFolder;
@@ -58,6 +60,7 @@ public class JetiLogAnalytics {
 	  logFolderName = "/home/stransky/Links/Modellflug/JETI/logTest";
 
 	  boolean externCall = false;
+	  boolean useLocalSetting = false;
 	  MyLogger.setup(APP_NAME);
 	  NLS.getInstance().setLang(NLSLang.EN);
 
@@ -75,7 +78,10 @@ public class JetiLogAnalytics {
 		  // System.out.println("using log folder: " + args[0]);
 		  MyLogger.setup(APP_NAME, "/var/log/jla");
 		}
-
+		if (args[i].equals("-l")) {
+		  i++;
+		  useLocalSetting = true;
+		}
 	  }
 	  System.out.println(APP_NAME + " (JLA)" + " Version: " + VERSION);
 
@@ -88,14 +94,15 @@ public class JetiLogAnalytics {
 	  LocalDate fromDate = null;
 	  LocalDate toDate = null;
 
-	  if (false) {
+	  if (useLocalSetting) {
 		// for local testing purposes
 		logFolderName = "/home/stransky/Downloads/jlog";
+		logFolderName = "/home/stransky/LocalMirror/Modellflug/JETI/log/Log";
 		logFolderName = "/home/stransky/Links/Modellflug/JETI/log/Log";
-		fromDate = LocalDate.of(2019, 5, 2);
-		toDate = LocalDate.of(2019, 5, 2);
-		fromDate = LocalDate.of(2019, 9, 13);
+		fromDate = LocalDate.of(2019, 12, 31);
+		fromDate = LocalDate.of(2019, 9 ,19);
 		toDate = null;
+		toDate = LocalDate.of(2019, 9, 22);
 	  }
 
 	  File[] files = new File(logFolderName).listFiles();

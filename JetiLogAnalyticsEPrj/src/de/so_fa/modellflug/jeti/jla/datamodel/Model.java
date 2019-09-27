@@ -224,7 +224,7 @@ public class Model {
 		+ cntLog);
 	totalOut.append("\n");
 	totalOut.append("  " + NLS.fillWithBlanks(NLS.get(NLSKey.LOGDURATION) + " " + NLS.get(NLSKey.TOTAL), indentation)
-		+ ": " + TimeDuration.getString(timeLogs));
+		+ ": " + TimeDuration.getString(timeLogs) + " (100%)");
 	totalOut.append("\n");
 	totalOut.append(
 		"  " + NLS.fillWithBlanks(NLS.get(NLSKey.MODEL_COUNT), indentation) + ": " + ourModels.entrySet().size());
@@ -233,7 +233,7 @@ public class Model {
 		+ ": " + cntFlights);
 	totalOut.append("\n");
 	totalOut.append("  " + NLS.fillWithBlanks(NLS.get(NLSKey.FLIGHTDURATION) + " " + NLS.get(NLSKey.TOTAL), indentation)
-		+ ": " + TimeDuration.getString(timeFlights));
+		+ ": " + TimeDuration.getString(timeFlights) + " ("+ (int) (timeFlights*100/timeLogs)+"%)");
 	totalOut.append("\n");
 	if (allAlarms != null && !allAlarms.isEmpty()) {
 	  totalOut.append("  " + NLS.get(NLSKey.ALARMS, indentation) + ":\n");

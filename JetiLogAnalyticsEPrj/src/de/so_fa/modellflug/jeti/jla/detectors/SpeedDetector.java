@@ -129,7 +129,13 @@ public class SpeedDetector extends SensorObserverAdapter implements IFlightListe
 
   @Override
   public void flightStart() {
-	// TODO Auto-generated method stub
+	myMaxSpeed = 0;
+	myAvgGpsSpeed = 0.0f;
+	myAvgAirSpeed = 0.0f;
+	myAirSpeedCnt = myGpsSpeedCnt = 0;
+	// System.out.println("new VDistro");
+	myVDistro = new int[300];
+
 	
   }
 
@@ -138,14 +144,6 @@ public class SpeedDetector extends SensorObserverAdapter implements IFlightListe
 	aFlight.setMaxSpeed(getMaxSpeed());
 	aFlight.setAvgSpeed(getAvgSpeed());
 	aFlight.setVnorm(getVDistroMax());
-	
-	myMaxSpeed = 0;
-	myAvgGpsSpeed = 0.0f;
-	myAvgAirSpeed = 0.0f;
-	myAirSpeedCnt = myGpsSpeedCnt = 0;
-	// System.out.println("new VDistro");
-	myVDistro = new int[300];
-
   }
 
 }
