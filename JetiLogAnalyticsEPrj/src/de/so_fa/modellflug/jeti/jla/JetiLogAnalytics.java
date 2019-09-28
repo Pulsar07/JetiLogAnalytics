@@ -45,8 +45,10 @@ public class JetiLogAnalytics {
    * 0.1.11 : 09/2019 RS : bugfix in class FlightDetectorSignalStrength, fixed initialization bug for switching log files
    * 
    * 0.1.12 : 09/2019 RS : bugfix SpeedDetector initialize vars in flightStart()
+   * 
+   * 0.1.13 : 09/2019 RS : bugfix argument processing
    */
-  private static final String VERSION = "0.1.12";
+  private static final String VERSION = "0.1.13";
   private static final String APP_NAME = "JetiLogAnalytics";
   private final static Logger ourLogger = Logger.getLogger(JetiLogAnalytics.class.getName());
   static File ourFolder;
@@ -79,7 +81,6 @@ public class JetiLogAnalytics {
 		  MyLogger.setup(APP_NAME, "/var/log/jla");
 		}
 		if (args[i].equals("-l")) {
-		  i++;
 		  useLocalSetting = true;
 		}
 	  }
@@ -100,8 +101,8 @@ public class JetiLogAnalytics {
 		logFolderName = "/home/stransky/LocalMirror/Modellflug/JETI/log/Log";
 		logFolderName = "/home/stransky/Links/Modellflug/JETI/log/Log";
 		fromDate = LocalDate.of(2019, 12, 31);
-		fromDate = LocalDate.of(2019, 9 ,19);
 		toDate = null;
+		fromDate = LocalDate.of(2019, 9 ,19);
 		toDate = LocalDate.of(2019, 9, 22);
 	  }
 
