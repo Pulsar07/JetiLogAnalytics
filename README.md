@@ -1,12 +1,11 @@
 # <img src="doc/img/glidersymbol.png" alt="symbol" width="60"/> JETI Log Analytics  
+
 a standalone application to parse and analyses JETI log files in a bulk matter.
 The current version of JETI Log Analytics can be used in a command line mode or in a GUI based mode.
-JETI Log Analytics is a Java application (using JavaFX as GUI framework) build as a runnable jar file.
-The required JRE is at least a Java-8. Open-JDK should work.
-On Windows and Mac this JetiLogAnalytics.jar - file can be easily started by double clicking the file. On Linux the wrapper script JetiLogAnalytics.sh can be used to start teh GUI based application.
 
 ![](doc/img/JetiLogAnalytics_GUI_en.png)
 
+## Details
 The application is written to extract detailed data per flight, per model and total. One of the main features is a flight detection algorithm (based on the signal levels A1 and A2 given by any RX of JETI), which does provides extraction of detailed data only if the model is not in the near area of the transmitter (air field, workbench, ...).
 
 JET Log Analytics needs only a base directory as argument to find the JETI log files in their date based folder structure. It scans all files and gives information about files, models, flights and overall data.
@@ -86,4 +85,26 @@ So it is very easy to get the overall pure flight duration for the given files. 
 	    Alarm: Rx-Spannung          : 13
 	    Schw. Signal: Q             : 6
 	    Signalverlust               : 3
+	
+## Software
+This git repository is a Eclipse workspace. So if you want to build the software for yourself, clone the project to a folder and set this folder as a Eclipse workspace.
+
+JETI Log Analytics is a Java application (using JavaFX as GUI framework) build as a runnable jar file.
+The required JRE is at least a Java-8. Open-JDK should work.
+On Windows and Mac this JetiLogAnalytics.jar - file can be easily started by double clicking the file. On Linux the wrapper script JetiLogAnalytics.sh can be used to start teh GUI based application.
+
+The JetiLogAnalytics.jar/-.sh - files are provided in the bin folder in this repository. 
+
+
+## command line usage
+	$ /remote/netdata/nas/JetiLogAnalytics.sh --help
+	usage: JetiLogAnalytics [option]
+	scans JETI log files found in folder and printout the results of total, model, flight statistic
+	Example: java -jar JetiLogAnalytics-nls DE -nogui -dir ./testData/ 
+	
+	options:
+	 --nogui                      commndline mode and textoutput only application
+	 --dir <path to log-folder>   path used in command line mode
+	 --from <YYYY-MM-DD>          date to start analysing log files, if omitted all log files found are analysed
+	 --to <YYYY-MM-DD>            date to end analysing log files, if omitted all log files found are analysed
 	
