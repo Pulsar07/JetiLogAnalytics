@@ -1,90 +1,89 @@
-# JETI Log Analytics
+# <img src="doc/img/glidersymbol.png" alt="symbol" width="60"/> JETI Log Analytics  
+a standalone application to parse and analyses JETI log files in a bulk matter.
+The current version of JETI Log Analytics can be used in a command line mode or in a GUI based mode.
+JETI Log Analytics is a Java application (using JavaFX as GUI framework) build as a runnable jar file.
+The required JRE is at least a Java-8. Open-JDK should work.
+On Windows and Mac this JetiLogAnalytics.jar - file can be easily started by double clicking the file. On Linux the wrapper script JetiLogAnalytics.sh can be used to start teh GUI based application.
 
-a standalone Java application to scan and analyses JETI log files in a bulk matter.
+![](doc/img/JetiLogAnalytics_GUI_en.png)
 
-The application is written to extract flight data per model. There is a flight detection algorithm used, based on the signal levels A1 and A2 given by any RX of JETI.
-If a model is not moving and the TX is very near to the model (as on the airfield or on the workbench), the values are near to the maximum.
+The application is written to extract detailed data per flight, per model and total. One of the main features is a flight detection algorithm (based on the signal levels A1 and A2 given by any RX of JETI), which does provides extraction of detailed data only if the model is not in the near area of the transmitter (air field, workbench, ...).
 
 JET Log Analytics needs only a base directory as argument to find the JETI log files in their date based folder structure. It scans all files and gives information about files, models, flights and overall data.
+It is possible to give a date range to filter the given information to the need range.
 
 So it is very easy to get the overall pure flight duration for the given files. In addition to the flight duration it will give some statistical data (if existing) per flight/model:
 * modelname
-* max. height
-* max speed
-* avg speed
-* number of flights
-* flight duration
+* real flight duration
 * log duration
-* detection type (at the moment only SIGNAL)
+* real number of flight (not count of log files)
+* flight heights
+* flight speeds (air- and GPS-speed)
+* flight distance
+* RX voltage minimum 
+* list of alarms and number
+* timestamps with the real start of flight
+* signal-pulse-distance (in case the an RXQ sensor is available)
 
- Here an short example of  scan result:
-
-	JetiLogAnalytics (JLA) Version: 0.1.7
+ Here an short example of a scan result:
 	
 	Reading Log-Files:
-	scanning log file: 20181006/10-54-44.log : model: ASW 17, number flights: 0
-	scanning log file: 20181006/15-21-30.log : model: ASW 17, number flights: 1
-	scanning log file: 20190815/14-47-18.log : model: FW-Swift 385, number flights: 1
-	scanning log file: 20190827/14-54-26.log : model: SB14, number flights: 1
-	scanning log file: 20190827/15-22-13.log : model: SB14, number flights: 2
+	  scanning log file: 20200301/14-05-54.log : model: X-Swift 3.2, number flights: 1
+	  scanning log file: 20200303/12-06-22.log : model: X-Swift 3.2, number flights: 0
+	  scanning log file: 20200303/15-24-31.log : model: X-Swift 3.2, number flights: 1
 	
-	model statistic (3 models):
-	model                       : SB14
-	max. height (in m)        : 773
-	max. speed (in km/h)      : 273
-	number flights            : 3
-	flight duration total     : 01:08:05
-	log duration total        : 01:27:17
-	flight                    : 2019-08-27 15:00:35
-	detection type          : SIGNAL
-	flight duration         : 00:21:16
-	max. height (in m)      : 644
-	avg. speed (in km/h)    : 48
-	max. speed (in km/h)    : 273
-	flight                    : 2019-08-27 15:28:22
-	detection type          : SIGNAL
-	flight duration         : 00:21:16
-	max. height (in m)      : 177
-	avg. speed (in km/h)    : 33
-	max. speed (in km/h)    : 154
-	flight                    : 2019-08-27 15:55:26
-	detection type          : SIGNAL
-	flight duration         : 00:25:33
-	max. height (in m)      : 773
-	avg. speed (in km/h)    : 61
-	max. speed (in km/h)    : 219
-	
-	model                       : ASW 17
-	max. height (in m)        : 283
-	max. speed (in km/h)      : 216
-	number flights            : 1
-	flight duration total     : 00:39:54
-	log duration total        : 00:52:00
-	flight                    : 2018-10-06 15:23:53
-	detection type          : SIGNAL
-	flight duration         : 00:39:54
-	max. height (in m)      : 283
-	avg. speed (in km/h)    : 43
-	max. speed (in km/h)    : 216
-	
-	model                       : FW-Swift 385
-	max. height (in m)        : 291
-	max. speed (in km/h)      : 193
-	number flights            : 1
-	flight duration total     : 00:52:45
-	log duration total        : 00:54:31
-	flight                    : 2019-08-15 14:47:50
-	detection type          : SIGNAL
-	flight duration         : 00:52:45
-	max. height (in m)      : 291
-	avg. speed (in km/h)    : 41
-	max. speed (in km/h)    : 193
+	model statistic (1 models):
+	model                           : X-Swift 3.2
+	  number flights                : 2
+	  flight duration total         : 01:28:24
+	  log duration total            : 01:49:47
+	  height (min/max)              : 0/270 (in m)
+	  gps speed (min/max)           : 0/233 (in km/h)
+	  signal-pulse-distance (max)   : 53 (in ms)
+	  distance (min/max)            : 0/782 (in m)
+	  Rx voltage (min)              : 7.1 (in V)
+	  alarms:
+	    900MHz Tx aktiviert         : 1
+	    Alarm: Rx-Spannung          : 13
+	    Schw. Signal: Q             : 6
+	    Signalverlust               : 3
+	  flights / details             
+	    flight / timestamp              : 2020-03-01 14:06:52
+	      log file                      : 20200301/14-05-54.log
+	      log duration total            : 00:36:59
+	      flight duration               : 00:35:58
+	      height (min/max/Ø)            : 4/270/97 (in m)
+	      gps speed (min/max/Ø)         : 0/233/58 (in km/h)
+	      signal-pulse-distance (max)   : 9 (in ms)
+	      distance (min/max/Ø)          : 0/611/162 (in m)
+	      Rx voltage (min)              : 7.1 (in V)
+	      alarms:
+	        Alarm: Rx-Spannung          : 13
+	        Schw. Signal: Q             : 1
+	        Signalverlust               : 3
+	    flight / timestamp              : 2020-03-03 15:28:30
+	      log file                      : 20200303/15-24-31.log
+	      log duration total            : 00:57:32
+	      flight duration               : 00:52:26
+	      height (min/max/Ø)            : 0/216/99 (in m)
+	      gps speed (min/max/Ø)         : 0/199/52 (in km/h)
+	      signal-pulse-distance (max)   : 53 (in ms)
+	      distance (min/max/Ø)          : 4/782/228 (in m)
+	      Rx voltage (min)              : 7.37 (in V)
+	      alarms:
+	        900MHz Tx aktiviert         : 1
+	        Schw. Signal: Q             : 5
 	
 	
-	Statisic total:
-	number logs total         : 5
-	log duration total        : 03:13:48
-	number models             : 3
-	number flights total      : 5
-	flight duration total     : 02:40:44
-
+	Statisic total                  
+	  number logs total             : 3
+	  log duration total            : 01:49:47
+	  number models                 : 1
+	  number flights total          : 2
+	  flight duration total         : 01:28:24
+	  alarms                        :
+	    900MHz Tx aktiviert         : 1
+	    Alarm: Rx-Spannung          : 13
+	    Schw. Signal: Q             : 6
+	    Signalverlust               : 3
+	

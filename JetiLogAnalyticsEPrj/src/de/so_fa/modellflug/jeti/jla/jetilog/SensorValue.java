@@ -1,4 +1,4 @@
-package de.so_fa.modellflug.jeti.jla.log;
+package de.so_fa.modellflug.jeti.jla.jetilog;
 
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
@@ -116,6 +116,9 @@ public class SensorValue {
 	return myAlarmValue;
   }
 
+  /**
+   * @return true if the given description fits to the this value, else return false 
+   */
   public boolean is(SensorValueDescription aSensorDescr) {
 	boolean retVal = false;
 	if (aSensorDescr != null && mySensorId == aSensorDescr.getId() && myValueIdx == aSensorDescr.getIndex()) {

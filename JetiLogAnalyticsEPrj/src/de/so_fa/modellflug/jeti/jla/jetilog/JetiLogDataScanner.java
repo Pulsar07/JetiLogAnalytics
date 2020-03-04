@@ -1,4 +1,4 @@
-package de.so_fa.modellflug.jeti.jla.log;
+package de.so_fa.modellflug.jeti.jla.jetilog;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -11,7 +11,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,9 +21,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.so_fa.modellflug.jeti.jla.datamodel.Flight;
+import de.so_fa.modellflug.jeti.jla.datamodel.IFlightListener;
 import de.so_fa.modellflug.jeti.jla.datamodel.Model;
-import de.so_fa.modellflug.jeti.jla.detectors.IFlightListener;
 import de.so_fa.modellflug.jeti.jla.detectors.ISensorObserver;
+import de.so_fa.modellflug.jeti.jla.detectors.ISensorValueHandler;
 import de.so_fa.modellflug.jeti.jla.lang.NLS;
 import de.so_fa.modellflug.jeti.jla.lang.NLS.NLSKey;
 
@@ -29,7 +32,9 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
 
   private final static Logger ourLogger = Logger.getLogger(JetiLogDataScanner.class.getName());
 
-  private static List<JetiLogDataScanner> myLogDataList = new ArrayList<JetiLogDataScanner>();
+  private static List<JetiLogDataScanner> ourLogDataList;
+  private static List<ISensorObserver> ourSensorObservers;
+
   static private final long HEADER = 0;
 
   File myLogFile;
@@ -42,10 +47,14 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
   int myFlightCnt = 0;
   long myStartOffset = 0;
   long myActualTime = 0;
-  private static List<ISensorObserver> ourSensorObservers = new ArrayList<ISensorObserver>();
 
   public static void addSensorObserver(ISensorObserver aObserver) {
 	ourSensorObservers.add(aObserver);
+  }
+
+  public static void init() {
+	ourSensorObservers = new ArrayList<ISensorObserver>();
+	ourLogDataList = new ArrayList<JetiLogDataScanner>();
   }
 
   public static void addNewLog(File aFile, File aFolder) {
@@ -55,10 +64,10 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
 	if (aFile == null || !JetiLogDataScanner.validateLogFile(aFolder, aFile)) {
 	  ourLogger.warning("ignoring log file : " + aFile);
 	  String folderString = null == aFolder ? "" : aFolder.getName();
-	  System.out.println(NLS.get(NLSKey.LOG_FILE_NOT_AS_EXPECTED) + ": " + folderString + "/" + aFile.getName());
+	  System.out.println(NLS.get(NLSKey.CO_LOG_FILE_NOT_AS_EXPECTED) + ": " + folderString + "/" + aFile.getName());
 	  return;
 	}
-	myLogDataList.add(new JetiLogDataScanner(aFile, aFolder));
+	ourLogDataList.add(new JetiLogDataScanner(aFile, aFolder));
   }
 
   public int getFlightCnt() {
@@ -105,11 +114,13 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
 			isJetiLog = true;
 			myModelName = strLine.substring(2);
 			for (ISensorObserver sensorObserver : ourSensorObservers) {
+			  sensorObserver.resetValueHandler();
 			  sensorObserver.newLogData(this);
+			  SensorValueDescription.newHeader();
 			}
 		  }
 		} else {
-		  scanLogLine(strLine, lineCnt+1);
+		  scanLogLine(strLine, lineCnt + 1);
 		}
 
 		lineCnt++;
@@ -131,10 +142,6 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
 
   private void scanLogLine(String aLine, int aLineNumber) {
 	try {
-	  if (aLineNumber == 20509) {
-		int i = 0;
-		i++;
-	  }
 	  StringTokenizer tokenizer = new StringTokenizer(aLine, ";");
 	  long timeStamp = Long.parseLong(tokenizer.nextToken());
 	  String idToken = tokenizer.nextToken();
@@ -159,10 +166,11 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
 
 		  // now call all sensor observers, if the sensor value is matching
 		  for (ISensorObserver sensorObserver : ourSensorObservers) {
-			for (SensorValueDescription descr : sensorObserver.getSensorDescr()) {
-			  if (value.is(descr)) {
-				// ourLogger.severe("observers matched value: " + sensorObserver);
-				sensorObserver.valueMatch(value);
+			for (ISensorValueHandler handler : sensorObserver.getValueHandler()) {
+			  for (SensorValueDescription descr : handler.getSensorDescr()) {
+				if (value.is(descr)) {
+				  handler.handle(value);
+				}
 			  }
 			}
 		  }
@@ -204,6 +212,10 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
 	}
 	SensorValueDescription descr = new SensorValueDescription(aSensorId, sensorValueIdx, sensorValueName,
 		sensorValueUnit);
+	if (descr.getIndex() == 0) {
+	  // this is the one of sometimes more lines for a sensor device
+	  SensorValueDescription.updateSensorDevice(descr);
+	}
 
 	for (ISensorObserver sensorObserver : ourSensorObservers) {
 	  Pattern p = sensorObserver.getSensorNamePattern();
@@ -249,15 +261,15 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
   }
 
   public static void analyseData() {
-	Collections.sort(myLogDataList);
-	for (JetiLogDataScanner data : myLogDataList) {
+	Collections.sort(ourLogDataList);
+	for (JetiLogDataScanner data : ourLogDataList) {
 	  try {
 		ourLogger.info("scanning :" + data.getLogFolder().getName() + "/" + data.getLogFile().getName());
 		data.analyse();
 		ourLogger.info("scanning data : model: " + data.getModelName() + ", flightcnt: " + data.getFlightCnt());
-		System.out.println("  " + NLS.get(NLSKey.SCAN_LOG) + ": " + data.getLogFolder().getName() + "/"
-			+ data.getLogFile().getName() + " : " + NLS.get(NLSKey.MODEL) + ": " + data.getModelName() + ", "
-			+ NLS.get(NLSKey.FLIGHT_COUNT) + ": " + data.getFlightCnt());
+		System.out.println("  " + NLS.get(NLSKey.CO_SCAN_LOG) + ": " + data.getLogFolder().getName() + "/"
+			+ data.getLogFile().getName() + " : " + NLS.get(NLSKey.CO_MODEL) + ": " + data.getModelName() + ", "
+			+ NLS.get(NLSKey.CO_FLIGHT_COUNT) + ": " + data.getFlightCnt());
 
 		if (data.isJetiLogfile()) {
 		  ourLogger.fine("using Jeti log file: " + data.getLogFolder().getName() + "/" + data.getLogFile().getName());

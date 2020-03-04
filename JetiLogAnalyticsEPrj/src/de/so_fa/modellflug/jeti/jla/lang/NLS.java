@@ -1,95 +1,31 @@
 package de.so_fa.modellflug.jeti.jla.lang;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 public class NLS {
+
+  static ResourceBundle ourLabelBundle;
 
   public static enum NLSLang {
 	DE, EN
   }
 
-  private static Map<NLSKey, String> ourEN = new HashMap<NLSKey, String>();
-  private static Map<NLSKey, String> ourDE = new HashMap<NLSKey, String>();
-
-  private static Map<NLSKey, String> ourMLMap = ourEN;
-
   public static enum NLSKey {
-	KEY_READLOG, SCAN_LOG, FLIGHT_COUNT, MODEL, MODELS, MAX_HEIGHT, MAX_SPEED, AVG_SPEED, NORM_SPEED, STATISTIC_TOTAL,
-	FLIGHT, FLIGHTS, FLIGHT_DETECTION_TYPE, FLIGHTDURATION, LOG_COUNT, TOTAL, LOGDURATION, MODEL_COUNT,
-	LOG_FOLDER_NOT_AS_EXPECTED, LOG_FILE_NOT_AS_EXPECTED, MODEL_STATISTIC, ALARMS, LOG_FILE
+	CO_KEY_READLOG, CO_SCAN_LOG, CO_FLIGHT_COUNT, CO_MODEL, CO_MODELS, CO_STATISTIC_TOTAL, CO_FLIGHT, CO_FLIGHTS, CO_FLIGHT_DETECTION_TYPE, 
+	CO_FLIGHTDURATION, CO_LOG_COUNT,
+	CO_TOTAL, CO_LOGDURATION, CO_MODEL_COUNT, CO_LOG_FOLDER_NOT_AS_EXPECTED, CO_LOG_FILE_NOT_AS_EXPECTED,
+	CO_MODEL_STATISTIC, CO_ALARMS, CO_LOG_FILE, 
+	CO_SIG_DURA,
+	CO_GEN_SPEED, CO_GEN_AIR_SPEED, CO_GEN_GPS_SPEED, CO_GEN_DISTANCE, CO_GEN_HEIGHT,
+	CO_GEN_MIN, CO_GEN_MAX, CO_GEN_AVG, CO_GEN_VOLTAGE,
+	FX_HelpHeader, FX_HelpContent
   }
 
-  {
-	ourEN.put(NLSKey.MODEL_STATISTIC, "model statistic");
-	ourDE.put(NLSKey.MODEL_STATISTIC, "Modell Statistik");
-
-	ourEN.put(NLSKey.LOG_FILE_NOT_AS_EXPECTED, "log file not as expected");
-	ourDE.put(NLSKey.LOG_FILE_NOT_AS_EXPECTED, "Log Datei nicht wie erwartet");
-
-	ourEN.put(NLSKey.LOG_FOLDER_NOT_AS_EXPECTED, "log folder not as expected");
-	ourDE.put(NLSKey.LOG_FOLDER_NOT_AS_EXPECTED, "Log Verzeichnis nicht wie erwartet");
-
-	ourEN.put(NLSKey.FLIGHT, "flight");
-	ourDE.put(NLSKey.FLIGHT, "Flug");
-
-	ourEN.put(NLSKey.FLIGHTS, "flights");
-	ourDE.put(NLSKey.FLIGHTS, "Flüge");
-
-	ourEN.put(NLSKey.FLIGHT_DETECTION_TYPE, "detection type");
-	ourDE.put(NLSKey.FLIGHT_DETECTION_TYPE, "Erkennungstyp");
-
-	ourEN.put(NLSKey.STATISTIC_TOTAL, "Statisic total");
-	ourDE.put(NLSKey.STATISTIC_TOTAL, "Gesamtstatistik");
-
-	ourEN.put(NLSKey.LOGDURATION, "log duration");
-	ourDE.put(NLSKey.LOGDURATION, "Logzeit");
-
-	ourEN.put(NLSKey.FLIGHTDURATION, "flight duration");
-	ourDE.put(NLSKey.FLIGHTDURATION, "Flugzeit");
-
-	ourEN.put(NLSKey.MAX_HEIGHT, "max. height (in m)");
-	ourDE.put(NLSKey.MAX_HEIGHT, "max. Höhe (in m)");
-
-	ourEN.put(NLSKey.MAX_SPEED, "max. speed (in km/h)");
-	ourDE.put(NLSKey.MAX_SPEED, "max. Speed (in km/h)");
-
-	ourEN.put(NLSKey.AVG_SPEED, "avg. speed (in km/h)");
-	ourDE.put(NLSKey.AVG_SPEED, "mittl. Speed (in km/h)");
-
-	ourEN.put(NLSKey.NORM_SPEED, "normal speed (in km/h)");
-	ourDE.put(NLSKey.NORM_SPEED, "normal Speed (in km/h)");
-
-	ourEN.put(NLSKey.KEY_READLOG, "Reading Log-Files");
-	ourDE.put(NLSKey.KEY_READLOG, "Lese Log-Dateien");
-
-	ourEN.put(NLSKey.SCAN_LOG, "scanning log file");
-	ourDE.put(NLSKey.SCAN_LOG, "scanne Log-Datei");
-
-	ourEN.put(NLSKey.FLIGHT_COUNT, "number flights");
-	ourDE.put(NLSKey.FLIGHT_COUNT, "Anzahl Flüge");
-
-	ourEN.put(NLSKey.LOG_COUNT, "number logs");
-	ourDE.put(NLSKey.LOG_COUNT, "Anzahl Logdateien");
-
-	ourEN.put(NLSKey.MODEL_COUNT, "number models");
-	ourDE.put(NLSKey.MODEL_COUNT, "Anzahl Modelle");
-
-	ourEN.put(NLSKey.MODEL, "model");
-	ourDE.put(NLSKey.MODEL, "Modell");
-
-	ourEN.put(NLSKey.MODELS, "models");
-	ourDE.put(NLSKey.MODELS, "Modelle");
-
-	ourEN.put(NLSKey.TOTAL, "total");
-	ourDE.put(NLSKey.TOTAL, "gesamt");
-
-	ourEN.put(NLSKey.ALARMS, "alarms");
-	ourDE.put(NLSKey.ALARMS, "Alarme");
-	
-	ourEN.put(NLSKey.LOG_FILE, "log file");
-	ourDE.put(NLSKey.LOG_FILE, "Log-Datei");
-  }
+//	
+//	ourEN.put(NLSKey.LOG_FILE, "log file");
+//	ourDE.put(NLSKey.LOG_FILE, "Log-Datei");
+//  }
 
   private static NLS ourInstance = null;
 
@@ -101,13 +37,14 @@ public class NLS {
   }
 
   NLS() {
-	ourMLMap = ourEN;
+	Locale locale = Locale.getDefault();
+	ourLabelBundle = ResourceBundle.getBundle("de.so_fa.modellflug.jeti.jla.gui.JLAGui", locale);
+
   }
 
   public void setLang(NLSLang aLang) {
-	if (aLang == NLSLang.DE) {
-	  ourMLMap = ourDE;
-	}
+	Locale locale = new Locale(aLang.toString().toLowerCase());
+	ourLabelBundle = ResourceBundle.getBundle("de.so_fa.modellflug.jeti.jla.gui.JLAGui", locale);
   }
 
   public static String get(NLSKey aKey) {
@@ -128,12 +65,7 @@ public class NLS {
   }
 
   public String getString(NLSKey aKey) {
-	if (ourMLMap.containsKey(aKey)) {
-	  return ourMLMap.get(aKey);
-	}
-	if (ourEN.containsKey(aKey)) {
-	  return ourEN.get(aKey);
-	}
-	throw new RuntimeException("no translation given for " + aKey);
+	return ourLabelBundle.getString(aKey.toString());
+//	throw new RuntimeException("no translation given for " + aKey);
   }
 }

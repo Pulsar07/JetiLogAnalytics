@@ -8,52 +8,64 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import de.so_fa.modellflug.jeti.jla.detectors.IFlightListener;
+import de.so_fa.modellflug.jeti.jla.jetilog.JetiLogDataScanner;
+import de.so_fa.modellflug.jeti.jla.jetilog.TimeDuration;
 import de.so_fa.modellflug.jeti.jla.lang.NLS;
 import de.so_fa.modellflug.jeti.jla.lang.NLS.NLSKey;
-import de.so_fa.modellflug.jeti.jla.log.TimeDuration;
-import de.so_fa.utils.log.MyLogger;
 
 public class Flight {
   public static final Logger ourLogger = Logger.getLogger(Flight.class.getName());
-  public static List<IFlightListener> ourFlightListeners = new ArrayList<IFlightListener>();
+  public static List<IFlightListener> ourFlightListeners;
 
   public enum FlightDetection {
 	HEIGHT, SPEED, SIGNAL, NA
   }
+
   // static List<Flight> ourO = new ArrayList<Flight>();
   Model myModel;
   LocalDateTime myStartTime;
   int myFlightDuration;
-  int myMaxHeight = 0;
-  int myMaxSpeed = 0;
-  int myAvgSpeed = 0;
-  int myVnorm = 0;
+
+  List<SensorAttribute> myAttributes = new ArrayList<SensorAttribute>();
+
   FlightDetection myDetectionType;
   Map<String, Integer> myAlarms;
-  private String myLogName;
+  private JetiLogDataScanner myLogData;
 
-  public int getAvgSpeed() {
-	return this.myAvgSpeed;
+  public static void init() {
+	ourFlightListeners = new ArrayList<IFlightListener>();
   }
 
-  public void setAvgSpeed(int aAvgSpeed) {
-	this.myAvgSpeed = aAvgSpeed;
+  public void addAttribute(NLSKey aName, String aUnit, Object aMinValue, Object aMaxValue, Object aAvgValue, boolean aAddToModel) {
+	SensorAttribute a = new SensorAttribute(aName, aUnit, aMinValue, aMaxValue, aAvgValue, aAddToModel);
+	myAttributes.add(a);
+	updateModel(a);
   }
 
-  public int getMaxHeight() {
-	return myMaxHeight;
+  void updateModel(SensorAttribute aAttribute) {
+//	if (aAttribute.getNameKey() == NLSKey.CO_GEN_AIR_SPEED) {
+//	  myModel.setMaxSpeed(((Integer) aAttribute.getMaxValue()).intValue());
+//	}
+//	if (aAttribute.getNameKey() == NLSKey.CO_GEN_GPS_SPEED) {
+//	  myModel.setMaxSpeed(((Integer) aAttribute.getMaxValue()).intValue());
+//	}
+//	if (aAttribute.getNameKey() == NLSKey.CO_GEN_HEIGHT) {
+//	  myModel.setMaxHeight(((Integer) aAttribute.getMaxValue()).intValue());
+//	}
+//	if (aAttribute.getNameKey() == NLSKey.CO_SIG_DURA) {
+//	  myModel.setSigDuraMax(((Integer) aAttribute.getMaxValue()).intValue());
+//	}
+	if (aAttribute.getDoAddToModel()) {
+	  myModel.addAttribute(aAttribute);
+	}
+
   }
 
-  public void setMaxHeight(int aMaxHeight) {
-	myMaxHeight = aMaxHeight;
-	myModel.setMaxHeight(myMaxHeight);
-  }
-
-  public static Flight createFlight(FlightDetection aType, Model aModel, LocalDateTime aTime, int aFlightDuration) {
+  public static Flight createFlight(FlightDetection aType, Model aModel, LocalDateTime aTime, int aFlightDuration, JetiLogDataScanner aLogData) {
 	Flight f = new Flight(aType, aModel);
 	f.setStartTime(aTime);
 	f.setFlightDuration(aFlightDuration);
+	f.setLog(aLogData);
 
 	ourLogger.info("flight end noti");
 	for (IFlightListener listener : ourFlightListeners) {
@@ -83,27 +95,13 @@ public class Flight {
 	return myFlightDuration;
   }
 
-  public void setMaxSpeed(int aMaxSpeed) {
-	myModel.setMaxSpeed(aMaxSpeed);
-	myMaxSpeed = aMaxSpeed;
-  }
-
-  public int getMaxSpeed() {
-	return myMaxSpeed;
-  }
-  
-  public void setVnorm(int aVnorm) {
-	myVnorm = aVnorm;
-  }
-  
   public static void potentialFlightStart() {
 	ourLogger.info("flight start noti");
 	for (IFlightListener listener : ourFlightListeners) {
 	  listener.flightStart();
 	}
-	
   }
-  
+
   public static void addFlightListener(IFlightListener aListener) {
 	ourFlightListeners.add(aListener);
   }
@@ -111,48 +109,36 @@ public class Flight {
   public static void removeFlightListener(IFlightListener aListener) {
 	ourFlightListeners.remove(aListener);
   }
-  
+
   public String toString() {
 	DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-	int identation = 22;
+	int identation = 30;
 	StringBuffer out = new StringBuffer();
-	out.append("    " + NLS.get(NLSKey.FLIGHT, identation) + "  : ");
+	out.append("    " + NLS.get(NLSKey.CO_FLIGHT, identation) + "  : ");
 	out.append(myStartTime.format(timeFormat));
 	out.append("\n");
-	out.append("      " + NLS.get(NLSKey.FLIGHT_DETECTION_TYPE, identation) + ": ");
-	out.append(myDetectionType);
+	out.append("      " + NLS.get(NLSKey.CO_LOG_FILE, identation) + ": ");
+	out.append(myLogData.getLogName());
 	out.append("\n");
-	out.append("      " + NLS.get(NLSKey.LOG_FILE, identation) + ": ");
-	out.append(myLogName);
-	out.append("\n");
-	out.append("      " + NLS.get(NLSKey.FLIGHTDURATION, identation) + ": ");
+	out.append("      " + NLS.fillWithBlanks(NLS.get(NLSKey.CO_LOGDURATION) + " " + NLS.get(NLSKey.CO_TOTAL), identation) + ": ");
+	out.append(TimeDuration.getString(myLogData.getLogDuration()));
+	out.append(System.getProperty("line.separator"));
+	out.append("      " + NLS.get(NLSKey.CO_FLIGHTDURATION, identation) + ": ");
 	out.append((new TimeDuration(myFlightDuration)).toString());
 	out.append("\n");
-	if (myMaxHeight > 20) {
-	  out.append("      " + NLS.get(NLSKey.MAX_HEIGHT, identation) + ": ");
-	  out.append(myMaxHeight);
+	for (SensorAttribute attr : myAttributes) {
+	  out.append("      " + NLS.fillWithBlanks(attr.getName(), identation) + ": ");
+	  out.append(attr.getValueString());
 	  out.append("\n");
-	}
-	if (myAvgSpeed > 10) {
-	  out.append("      " + NLS.get(NLSKey.NORM_SPEED, identation) + ": ");
-	  out.append(myVnorm);
-	  out.append("\n");
-	  out.append("      " + NLS.get(NLSKey.AVG_SPEED, identation) + ": ");
-	  out.append(myAvgSpeed);
-	  out.append("\n");
-	  out.append("      " + NLS.get(NLSKey.MAX_SPEED, identation) + ": ");
-	  out.append(myMaxSpeed);
-	  out.append("\n");
-	  
 	}
 	if (myAlarms != null && !myAlarms.isEmpty()) {
-	  out.append("      " + NLS.get(NLSKey.ALARMS) + ":\n");
+	  out.append("      " + NLS.get(NLSKey.CO_ALARMS) + ":\n");
 	  List<String> alarmList = new ArrayList<String>(myAlarms.keySet());
 	  alarmList.sort(Comparator.naturalOrder());
 	  for (String alarm : alarmList) {
-		  out.append("        " + NLS.fillWithBlanks(alarm, 20) + ": " + myAlarms.get(alarm));
-		  out.append("\n");
+		out.append("        " + NLS.fillWithBlanks(alarm, identation-2) + ": " + myAlarms.get(alarm));
+		out.append("\n");
 	  }
 	}
 	return out.toString();
@@ -164,12 +150,12 @@ public class Flight {
 	  return;
 	}
 	myAlarms = aAlarms;
-	for (String alarm: myAlarms.keySet()) {
+	for (String alarm : myAlarms.keySet()) {
 	  myModel.setAlarm(alarm, myAlarms.get(alarm));
 	}
   }
 
-  public void setLogName(String aName) {
-	myLogName = aName;
+  public void setLog(JetiLogDataScanner aLogData) {
+	myLogData = aLogData;
   }
 }

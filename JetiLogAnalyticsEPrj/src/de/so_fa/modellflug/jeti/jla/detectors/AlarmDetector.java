@@ -1,20 +1,21 @@
 package de.so_fa.modellflug.jeti.jla.detectors;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import de.so_fa.modellflug.jeti.jla.datamodel.Flight;
-import de.so_fa.modellflug.jeti.jla.log.JetiLogDataScanner;
-import de.so_fa.modellflug.jeti.jla.log.SensorValue;
-import de.so_fa.modellflug.jeti.jla.log.SensorValueDescription;
+import de.so_fa.modellflug.jeti.jla.datamodel.IFlightListener;
+import de.so_fa.modellflug.jeti.jla.jetilog.JetiLogDataScanner;
+import de.so_fa.modellflug.jeti.jla.jetilog.SensorValue;
+import de.so_fa.modellflug.jeti.jla.jetilog.SensorValueDescription;
 
 public class AlarmDetector extends SensorObserverAdapter implements IFlightListener {
 
   public static Logger ourLogger = Logger.getLogger(AlarmDetector.class.getName());
   Map<String, Integer> myAlarmsByFlight;
+  AlarmHandler myHandler;
   /*
    * Alarms are not valid sensor values. They do not exist in the Header section
    * of a Log file they appear in the log only as a sensor value with id ==
@@ -44,27 +45,34 @@ public class AlarmDetector extends SensorObserverAdapter implements IFlightListe
   @Override
   public void nameMatch(SensorValueDescription aDescr) {
 	// is not called for alarms
+	
   }
-
-  @Override
-  public Collection<SensorValueDescription> getSensorDescr() {
-	return myValueDescrMap.values();
-  }
-
-  @Override
-  public void valueMatch(SensorValue aValue) {
+  
+  
+  public void setAlarm(SensorValue aValue) {
 	String alarmName = aValue.getAlarm();
 	if (myAlarmsByFlight != null) {
-	  if (myAlarmsByFlight.containsKey(alarmName)) {
-		int cnt = myAlarmsByFlight.get(alarmName);
-		myAlarmsByFlight.put(alarmName, cnt++);
-	  } else {
-		myAlarmsByFlight.put(alarmName, 1);
-	  }
+	  int numAlarms = myAlarmsByFlight.get(alarmName) == null ? 1 : myAlarmsByFlight.get(alarmName) + 1;
+	  myAlarmsByFlight.put(alarmName, numAlarms);
+	  ourLogger.info(
+		  "match: " + " [" + myAlarmsByFlight.get(alarmName) + "] " + aValue.getAlarm() + " at: " + aValue.getTime());
+	} else {
+	  ourLogger.info("match, but not \"in flight\": " + aValue.getAlarm() + "/" + aValue.getTime());
 	}
-	// ourLogger.severe("match: " +aValue.getAlarm());
-
   }
+//  @Override
+//  public void valueMatch(SensorValue aValue) {
+//	String alarmName = aValue.getAlarm();
+//	if (myAlarmsByFlight != null) {
+//	  int numAlarms = myAlarmsByFlight.get(alarmName) == null ? 1 : myAlarmsByFlight.get(alarmName) + 1;
+//	  myAlarmsByFlight.put(alarmName, numAlarms);
+//	  ourLogger.info(
+//		  "match: " + " [" + myAlarmsByFlight.get(alarmName) + "] " + aValue.getAlarm() + " at: " + aValue.getTime());
+//	} else {
+//	  ourLogger.info("match, but not \"in flight\": " + aValue.getAlarm() + "/" + aValue.getTime());
+//	}
+//
+//  }
 
   @Override
   public void newLogData(JetiLogDataScanner aLogData) {
@@ -81,6 +89,10 @@ public class AlarmDetector extends SensorObserverAdapter implements IFlightListe
 
   @Override
   public void flightStart() {
+	SensorValueDescription descr = new SensorValueDescription(0, 15, "Alarm", "-");
+	myHandler = new AlarmHandler(this, descr);
+	addValueHandler(myHandler);
+
 	myAlarmsByFlight = new HashMap<String, Integer>();
   }
 
@@ -88,6 +100,23 @@ public class AlarmDetector extends SensorObserverAdapter implements IFlightListe
   public void flightEnd(Flight aF) {
 	aF.setAlarms(myAlarmsByFlight);
 	myAlarmsByFlight = null;
+  }
+
+  
+
+}
+
+class AlarmHandler extends SensorValueHandlerAdapter {
+  private AlarmDetector myDetector;
+
+  public AlarmHandler(AlarmDetector aDetector, SensorValueDescription aDescr) {
+	super(aDescr);
+	myDetector = aDetector;
+  }
+
+  @Override
+  public void handle(SensorValue aValue) {
+	myDetector.setAlarm(aValue);
   }
 
 }

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox fx:id="FX_" minWidth="-Infinity" prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8.0.202-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.so_fa.modellflug.jeti.jla.gui.JLAGuiController">
+  <children>
+      <HBox prefHeight="100.0" prefWidth="200.0">
+         <children>
+            <Label text="JETI Log Analytics" textFill="#cd6d2d" textOverrun="CENTER_WORD_ELLIPSIS">
+               <font>
+                  <Font name="System Bold" size="36.0" />
+               </font>
+            </Label>
+            <Pane maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefHeight="44.0" prefWidth="0.0" HBox.hgrow="SOMETIMES" />
+            <VBox alignment="TOP_RIGHT">
+               <children>
+                  <Button fx:id="FX_Help" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#onAction_Help" style="-fx-background-color: #cd6d2d;" text="?" textAlignment="CENTER" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                     <cursor>
+                        <Cursor fx:constant="DEFAULT" />
+                     </cursor>
+                  </Button>
+               </children>
+            </VBox>
+         </children>
+         <VBox.margin>
+            <Insets />
+         </VBox.margin>
+         <padding>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </padding>
+      </HBox>
+    <SplitPane dividerPositions="0.5" focusTraversable="true" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
+      <items>
+      <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="545.0" prefWidth="430.0" SplitPane.resizableWithParent="false">
+               <children>
+                  <TextArea fx:id="FX_ResultArea" editable="false" prefHeight="512.0" prefWidth="721.0" promptText="%FX_ResultAreaPromptText" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <font>
+                        <Font name="Monospaced Regular" size="13.0" />
+                     </font>
+                  </TextArea>
+               </children>
+               <padding>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </padding>
+      </AnchorPane>
+        <AnchorPane maxWidth="-Infinity" minWidth="-Infinity" prefWidth="165.0" SplitPane.resizableWithParent="false">
+          <children>
+                  <VBox layoutX="-41.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <children>
+                        <Label text="%FX_FromDateLabel">
+                           <padding>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                           </padding>
+                        </Label>
+                        <DatePicker fx:id="FX_FromDate" maxWidth="1.7976931348623157E308" />
+                        <Label text="%FX_ToDateLabel">
+                           <padding>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                           </padding>
+                        </Label>
+                        <DatePicker fx:id="FX_ToDate" maxWidth="1.7976931348623157E308" />
+                        <Button fx:id="FX_BrowsePath" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onAction_BrowsePath" text="%FX_BrowsePath" />
+                        <Pane VBox.vgrow="ALWAYS" />
+                        <Button fx:id="FX_StartAnalysis" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onAction_StartAnalysis" text="%FX_StartAnalysis" textFill="#2ba409">
+                           <font>
+                              <Font name="System Bold Italic" size="13.0" />
+                           </font>
+                        </Button>
+                        <Button fx:id="FX_Exit" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onAction_Exit" text="%FX_Exit" />
+                     </children>
+                  </VBox>
+          </children>
+        </AnchorPane>
+      </items>
+    </SplitPane>
+      <VBox prefHeight="67.0" prefWidth="908.0">
+         <children>
+          <HBox id="HBox" alignment="CENTER_LEFT" spacing="5.0" VBox.vgrow="NEVER">
+            <children>
+                  <Label text="%FX_PathLabel">
+                     <HBox.margin>
+                        <Insets left="10.0" />
+                     </HBox.margin>
+                  </Label>
+              <Label fx:id="FX_Path" maxHeight="1.7976931348623157E308" maxWidth="-1.0" text="FX_Path" textFill="#8a5e5e" HBox.hgrow="ALWAYS" />
+              <Pane prefHeight="-1.0" prefWidth="-1.0" HBox.hgrow="ALWAYS" />
+            </children>
+            <padding>
+              <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
+            </padding>
+          </HBox>
+            <Separator prefWidth="200.0" />
+            <HBox prefHeight="100.0" prefWidth="200.0">
+               <children>
+                  <Hyperlink fx:id="FX_ProjectLink" onAction="#onAction_GitHubLink" text="%FX_ProjectLink">
+                     <HBox.margin>
+                        <Insets left="10.0" />
+                     </HBox.margin>
+                  </Hyperlink>
+                  <Pane maxWidth="1.7976931348623157E308" minWidth="-Infinity" HBox.hgrow="ALWAYS" />
+                  <Label fx:id="FX_VersionLabel" contentDisplay="RIGHT" maxWidth="-1.0" text="FX_VersionLabel" textFill="#22046b">
+                     <HBox.margin>
+                        <Insets right="10.0" />
+                     </HBox.margin>
+                  </Label>
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+  </children>
+</VBox>

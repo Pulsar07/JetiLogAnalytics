@@ -1,15 +1,13 @@
 package de.so_fa.modellflug.jeti.jla.detectors;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import de.so_fa.modellflug.jeti.jla.datamodel.Flight;
 import de.so_fa.modellflug.jeti.jla.datamodel.Model;
-import de.so_fa.modellflug.jeti.jla.log.SensorValue;
-import de.so_fa.modellflug.jeti.jla.log.SensorValueDescription;
-import de.so_fa.modellflug.jeti.jla.log.TimeDuration;
+import de.so_fa.modellflug.jeti.jla.jetilog.JetiLogDataScanner;
+import de.so_fa.modellflug.jeti.jla.jetilog.SensorValue;
+import de.so_fa.modellflug.jeti.jla.jetilog.SensorValueDescription;
 
 public class FlightDetectorSignalStrength extends SensorObserverAdapter implements IFlightDetector {
   private static Logger ourLogger = Logger.getLogger(FlightDetectorSignalStrength.class.getName());
@@ -28,6 +26,8 @@ public class FlightDetectorSignalStrength extends SensorObserverAdapter implemen
   long myNoFlightTS = 0;
 
   private long myCurrentTimestamp;
+  private A1Handler myA1Handler;
+  private A2Handler myA2Handler;
 
   // # Radical
   // 000000000;4291922503;0;Tx;
@@ -55,16 +55,18 @@ public class FlightDetectorSignalStrength extends SensorObserverAdapter implemen
 
   @Override
   public void nameMatch(SensorValueDescription aDescr) {
-	// this is called each time a new log file is scanned, so force initialization of local variables
+	// this is called each time a new log file is scanned, so force initialization
+	// of local variables
 	init();
 	
-	// ourLogger.severe("" + aDescr.getName());
 	if (aDescr.getName().equals("A1")) {
-	  myValueDescrMap.put("A1", aDescr);
+	  myA1Handler = new A1Handler(this, aDescr);
+	  addValueHandler(myA1Handler);
 	}
 
 	if (aDescr.getName().equals("A2")) {
-	  myValueDescrMap.put("A2", aDescr);
+	  myA2Handler = new A2Handler(this, aDescr);
+	  addValueHandler(myA2Handler);
 	}
 
   }
@@ -73,20 +75,15 @@ public class FlightDetectorSignalStrength extends SensorObserverAdapter implemen
 	super();
   }
 
-  @Override
-  public void valueMatch(SensorValue aValue) {
-	// ourLogger.severe("");
-	myCurrentTimestamp = aValue.getTime();
-	if (aValue.is(myValueDescrMap.get("A1"))) {
-	  mySignalStrength_A1 = (int) aValue.getValue();
-	}
-	if (aValue.is(myValueDescrMap.get("A2"))) {
-	  mySignalStrength_A2 = (int) aValue.getValue();
-	}
-	flightDetectionBySignalStrength();
-  }
 
-  private void flightDetectionBySignalStrength() {
+  public void newLogData(JetiLogDataScanner aLogData) {
+	super.newLogData(aLogData);
+	myA1Handler = null;
+	myA2Handler = null;
+  }
+  
+  void flightDetectionBySignalStrength() {
+
 	double strength = mySignalStrength_A1 + mySignalStrength_A2;
 	if (strength < 0) {
 	  // ignore values if not all values are read
@@ -155,9 +152,9 @@ public class FlightDetectorSignalStrength extends SensorObserverAdapter implemen
 	  if (duration < NOFLIGHT_TIME_RANGE_LIMIT_IN_MS / 1000) {
 		return;
 	  }
+
 	  Flight f = Model.get(myLogData.getModelName()).addFlight(Flight.FlightDetection.SIGNAL,
-		  myLogData.getLogTime().plusSeconds(myStartTS / 1000), duration);
-	  f.setLogName(myLogData.getLogName());
+		  myLogData.getLogTime().plusSeconds(myStartTS / 1000), duration, myLogData);
 	}
 
   }
@@ -165,5 +162,49 @@ public class FlightDetectorSignalStrength extends SensorObserverAdapter implemen
   @Override
   public void endOfLog() {
 	flightDetection(myCurrentTimestamp, FlightState.NOFLIGHT, true);
+  }
+
+  public void setA1(SensorValue aValue) {
+	myCurrentTimestamp = aValue.getTime();
+	mySignalStrength_A1 = (int) aValue.getValue();
+	flightDetectionBySignalStrength();
+  }
+
+  public void setA2(SensorValue aValue) {
+	myCurrentTimestamp = aValue.getTime();
+	mySignalStrength_A2 = (int) aValue.getValue();
+	flightDetectionBySignalStrength();
+  }
+}
+
+class A1Handler extends SensorValueHandlerAdapter {
+  static private Logger ourLogger = Logger.getLogger(A1Handler.class.getName());
+
+  FlightDetectorSignalStrength myDetector;
+
+  public A1Handler(FlightDetectorSignalStrength aDetector, SensorValueDescription aDescr) {
+	super(aDescr);
+	this.myDetector = aDetector;
+  }
+
+  @Override
+  public void handle(SensorValue aValue) {
+	myDetector.setA1(aValue);
+  }
+}
+
+class A2Handler extends SensorValueHandlerAdapter {
+  static private Logger ourLogger = Logger.getLogger(A2Handler.class.getName());
+
+  FlightDetectorSignalStrength myDetector;
+
+  public A2Handler(FlightDetectorSignalStrength aDetector, SensorValueDescription aDescr) {
+	super(aDescr);
+	this.myDetector = aDetector;
+  }
+
+  @Override
+  public void handle(SensorValue aValue) {
+	myDetector.setA2(aValue);
   }
 }

@@ -10,19 +10,24 @@ import java.io.File;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import de.so_fa.modellflug.jeti.jla.datamodel.Flight;
 import de.so_fa.modellflug.jeti.jla.datamodel.Model;
 import de.so_fa.modellflug.jeti.jla.detectors.AlarmDetector;
-import de.so_fa.modellflug.jeti.jla.detectors.FlightDetectorHeight;
+import de.so_fa.modellflug.jeti.jla.detectors.DistanceDetector;
 import de.so_fa.modellflug.jeti.jla.detectors.FlightDetectorSignalStrength;
-import de.so_fa.modellflug.jeti.jla.detectors.ISensorObserver;
+import de.so_fa.modellflug.jeti.jla.detectors.FlightHeightDetector;
+import de.so_fa.modellflug.jeti.jla.detectors.RXQDetector;
 import de.so_fa.modellflug.jeti.jla.detectors.SpeedDetector;
+import de.so_fa.modellflug.jeti.jla.detectors.VoltageDetector;
+import de.so_fa.modellflug.jeti.jla.gui.JLAGui;
+import de.so_fa.modellflug.jeti.jla.jetilog.JetiLogDataScanner;
 import de.so_fa.modellflug.jeti.jla.lang.NLS;
 import de.so_fa.modellflug.jeti.jla.lang.NLS.NLSKey;
 import de.so_fa.modellflug.jeti.jla.lang.NLS.NLSLang;
-import de.so_fa.modellflug.jeti.jla.log.JetiLogDataScanner;
 import de.so_fa.utils.log.MyLogger;
 
 public class JetiLogAnalytics {
@@ -35,82 +40,132 @@ public class JetiLogAnalytics {
    * 
    * 0.1.8 : 08/2019 RS : some ignore/fix "holes" in time stamp and sensor id as
    * in some old log files existing recalculate different sensor value units (m/s,
-   * mpt, ft) to the ISO system units km/h and m 
+   * mpt, ft) to the ISO system units km/h and m
    * 
-   * 0.1.9 : 09/2019 RS : added
-   * AlarmDetector to show alarms per flight / model / overall
+   * 0.1.9 : 09/2019 RS : added AlarmDetector to show alarms per flight / model /
+   * overall
    * 
    * 0.1.10 : 09/2019 RS : some beautifications in format of result output
    * 
-   * 0.1.11 : 09/2019 RS : bugfix in class FlightDetectorSignalStrength, fixed initialization bug for switching log files
+   * 0.1.11 : 09/2019 RS : bugfix in class FlightDetectorSignalStrength, fixed
+   * initialization bug for switching log files
+   * 
+   * 0.2.0 : 03/2020 RS : added JavaFX GUI and RXQ
+   * (http://www.so-fa.de/nh/JetiSensorRXQ) Detector
    */
-  private static final String VERSION = "0.1.11";
-  private static final String APP_NAME = "JetiLogAnalytics";
+  public static final String VERSION = "0.2.0";
+  public static final String APP_NAME = "JetiLogAnalytics";
   private final static Logger ourLogger = Logger.getLogger(JetiLogAnalytics.class.getName());
-  static File ourFolder;
+  static File ourLogFolder;
+  static LocalDate ourFromDate = null;
+  static LocalDate ourToDate = null;
 
-  public static void main(String[] args) {
+  static private boolean ourGUISupport = true;
+
+  public static void main(String[] aArgs) {
 	try {
-
-	  String logFolderName = "/home/stransky/Links/Modellflug/JETI/log/Log";
-	  logFolderName = "/home/stransky/Downloads/jls/Logs";
-	  logFolderName = "/home/stransky/Links/Modellflug/JETI/log/Log";
-	  logFolderName = "/home/stransky/Links/Modellflug/JETI/logTest";
-
-	  boolean externCall = false;
 	  MyLogger.setup(APP_NAME);
-	  NLS.getInstance().setLang(NLSLang.EN);
 
-	  for (int i = 0; i < args.length; i++) {
-		if (args[i].equals("-nls") || args[i].equals("-NLS")) {
+	  for (int i = 0; i < aArgs.length; i++) {
+		if (aArgs[i].equals("-nls") || aArgs[i].equals("-NLS")) {
 		  i++;
-		  if (args[i].equals("DE")) {
+		  if (aArgs[i].equals("DE")) {
 			NLS.getInstance().setLang(NLSLang.DE);
 		  }
 		}
-		if (args[i].equals("-d") || args[i].equals("-dir")) {
+		if (aArgs[i].equals("-d") || aArgs[i].equals("-dir") || aArgs[i].equals("--dir")) {
 		  i++;
-		  externCall = true;
-		  logFolderName = args[i];
+		  ourLogFolder = new File(aArgs[i]);
+		  if (!ourLogFolder.isDirectory()) {
+			ourLogger.severe("--dir argument is not a directory");
+			System.exit(-1);
+		  }
 		  // System.out.println("using log folder: " + args[0]);
 		  MyLogger.setup(APP_NAME, "/var/log/jla");
 		}
+		if (aArgs[i].equals("-nogui") || aArgs[i].equals("--nogui")) {
+		  ourGUISupport = false;
+		}
 
+		if (aArgs[i].equals("--from") | aArgs[i].equals("-from")) {
+		  i++;
+		  try {
+			ourFromDate = LocalDate.parse(aArgs[i]);
+		  } catch (DateTimeParseException e) {
+			ourLogger.severe("--from - argument with invalid format, only \"2016-08-16\" is supported");
+			System.exit(-1);
+		  }
+		}
+		if (aArgs[i].equals("--to") | aArgs[i].equals("-to")) {
+		  i++;
+		  try {
+			ourToDate = LocalDate.parse(aArgs[i]);
+		  } catch (DateTimeParseException e) {
+			ourLogger.severe("--to - argument with invalid format, only \"2016-08-16\" is supported");
+			System.exit(-1);
+		  }
+		}
+		if (aArgs[i].equals("-?") || aArgs[i].equals("-help") || aArgs[i].equals("--help") || aArgs[i].equals("?")) {
+		  System.out.println("usage: " + APP_NAME + " [option]");
+		  System.out.println(
+			  "scans JETI log files found in folder and printout the results of total, model, flight statistic");
+		  System.out.println("Example: java -jar " + APP_NAME + "-nls DE -nogui -dir ./testData/ ");
+		  System.out.println("");
+		  System.out.println("options:");
+		  System.out.println(" --nogui                      commndline mode and textoutput only application");
+		  System.out.println(" --dir <path to log-folder>   path used in command line mode");
+		  System.out.println(
+			  " --from <YYYY-MM-DD>          date to start analysing log files, if omitted all log files found are analysed");
+		  System.out.println(
+			  " --to <YYYY-MM-DD>            date to end analysing log files, if omitted all log files found are analysed");
+		  System.exit(0);
+		}
 	  }
 	  System.out.println(APP_NAME + " (JLA)" + " Version: " + VERSION);
 
 	  ourLogger.info("START/RESTART of " + APP_NAME + " " + VERSION);
 
-	  if (false) {
-		testCode();
+//	  if (false) {
+//		testCode();
+//	  }
+
+	  if (ourGUISupport) {
+		JLAGui.startGUI(aArgs);
+	  } else {
+		if (ourLogFolder == null || !ourLogFolder.isDirectory()) {
+		  ourLogger.severe("no valid log folder given : " + ourLogFolder.getPath());
+		  System.exit(-1);
+		}
+		JetiLogAnalytics.startAnalysis(ourLogFolder, ourFromDate, ourToDate);
 	  }
+	} catch (Throwable e) {
+	  ourLogger.log(Level.SEVERE, "unexpected error:", e);
+	}
+  }
 
-	  LocalDate fromDate = null;
-	  LocalDate toDate = null;
+  public static void startAnalysis(File aJetiLogFolder, LocalDate aFrom, LocalDate aTo) {
+	try {
+	  JetiLogDataScanner.init();
+	  Model.init();
+	  Flight.init();
+	  File[] files = aJetiLogFolder.listFiles();
 
-	  if (false) {
-		// for local testing purposes
-		logFolderName = "/home/stransky/Downloads/jlog";
-		logFolderName = "/home/stransky/Links/Modellflug/JETI/log/Log";
-		fromDate = LocalDate.of(2019, 5, 2);
-		toDate = LocalDate.of(2019, 5, 2);
-		fromDate = LocalDate.of(2019, 9, 13);
-		toDate = null;
-	  }
+	  traverseJetiLogFiles(files, null, aFrom, aTo);
 
-	  File[] files = new File(logFolderName).listFiles();
-
-	  traverseJetiLogFiles(files, null, fromDate, toDate);
-
-	  JetiLogDataScanner.addSensorObserver(new FlightDetectorHeight());
+	  JetiLogDataScanner.addSensorObserver(new FlightHeightDetector());
 	  JetiLogDataScanner.addSensorObserver(new FlightDetectorSignalStrength());
 	  JetiLogDataScanner.addSensorObserver(new SpeedDetector());
 	  JetiLogDataScanner.addSensorObserver(new AlarmDetector());
+	  JetiLogDataScanner.addSensorObserver(new RXQDetector());
+	  JetiLogDataScanner.addSensorObserver(new DistanceDetector());
+	  JetiLogDataScanner.addSensorObserver(new VoltageDetector());
 
-	  System.out.println("\n" + NLS.get(NLSKey.KEY_READLOG) + ":");
+	  System.out.println("\n" + NLS.get(NLSKey.CO_KEY_READLOG) + ":");
 	  JetiLogDataScanner.analyseData();
 	  Model.printResult();
-	} catch (Throwable e) {
+	} catch (
+
+	Throwable e) {
 	  ourLogger.log(Level.SEVERE, "unexpected error in Navigator:", e);
 	}
 

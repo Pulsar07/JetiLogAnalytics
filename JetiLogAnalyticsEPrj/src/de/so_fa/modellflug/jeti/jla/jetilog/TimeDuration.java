@@ -1,4 +1,4 @@
-package de.so_fa.modellflug.jeti.jla.log;
+package de.so_fa.modellflug.jeti.jla.jetilog;
 
 public class TimeDuration {
 	long mySeconds;

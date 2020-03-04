@@ -1,12 +1,10 @@
 package de.so_fa.modellflug.jeti.jla.detectors;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.regex.Pattern;
 
-import de.so_fa.modellflug.jeti.jla.log.JetiLogDataScanner;
-import de.so_fa.modellflug.jeti.jla.log.SensorValue;
-import de.so_fa.modellflug.jeti.jla.log.SensorValueDescription;
+import de.so_fa.modellflug.jeti.jla.jetilog.JetiLogDataScanner;
+import de.so_fa.modellflug.jeti.jla.jetilog.SensorValueDescription;
 
 public interface ISensorObserver {
   /**
@@ -32,13 +30,6 @@ public interface ISensorObserver {
    */
   public Collection<SensorValueDescription> getSensorDescr();
   
-  /**
-   * this method is called if a sensor value mathces the given sensor value 
-   * descriptions given in getSensorDescr()
-   * @param aValue the value matching
-   */
-  public void valueMatch(SensorValue aValue);
-  
   /** 
    * this method is called in case a new log file is scanned, to reset some flight data
    * @param aLogData
@@ -49,4 +40,19 @@ public interface ISensorObserver {
    * this method is called in case a log file scan is finished, to reset some flight data
    */
   public void endOfLog();
+
+  public Collection<ISensorValueHandler> getValueHandler();
+  
+  /**
+   * add an new handler 
+   * @param aHandler
+   */
+  public void addValueHandler(ISensorValueHandler aHandler);
+  
+  /**
+   * is called to reset all added handlers in case of a new log file is scanned.
+   */
+  public void resetValueHandler();
+
+
 }

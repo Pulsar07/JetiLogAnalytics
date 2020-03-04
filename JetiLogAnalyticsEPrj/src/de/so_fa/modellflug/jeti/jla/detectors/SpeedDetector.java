@@ -3,10 +3,14 @@ package de.so_fa.modellflug.jeti.jla.detectors;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
+
 import de.so_fa.modellflug.jeti.jla.datamodel.Flight;
-import de.so_fa.modellflug.jeti.jla.log.JetiLogDataScanner;
-import de.so_fa.modellflug.jeti.jla.log.SensorValue;
-import de.so_fa.modellflug.jeti.jla.log.SensorValueDescription;
+import de.so_fa.modellflug.jeti.jla.datamodel.IFlightListener;
+import de.so_fa.modellflug.jeti.jla.jetilog.JetiLogDataScanner;
+import de.so_fa.modellflug.jeti.jla.jetilog.SensorValue;
+import de.so_fa.modellflug.jeti.jla.jetilog.SensorValueDescription;
+import de.so_fa.modellflug.jeti.jla.lang.NLS.NLSKey;
 
 public class SpeedDetector extends SensorObserverAdapter implements IFlightListener {
 
@@ -17,13 +21,13 @@ public class SpeedDetector extends SensorObserverAdapter implements IFlightListe
 
   static private Logger ourLogger = Logger.getLogger(SpeedDetector.class.getName());
 
-  int myMaxSpeed;
-  float myAvgGpsSpeed;
   float myGpsSpeedFactor;
-  int myAirSpeedCnt;
-  int myGpsSpeedCnt;
-  float myAvgAirSpeed;
   float myAirSpeedFactor;
+  GpsSpeedHandler myGpsSpeedHandler;
+  AirSpeedHandler myAirSpeedHandler;
+  SummaryStatistics myGpsSpeedStatistics;
+  SummaryStatistics myAirSpeedStatistics;
+  String myUnit = "km/h";
 
   @Override
   public Pattern getSensorNamePattern() {
@@ -32,9 +36,8 @@ public class SpeedDetector extends SensorObserverAdapter implements IFlightListe
 
   public void newLogData(JetiLogDataScanner aLogData) {
 	super.newLogData(aLogData);
-	// System.out.println("new VDistro");
-
-	myVDistro = new int[300];
+	myGpsSpeedHandler = null;
+	myAirSpeedHandler = null;
   }
 
   @Override
@@ -42,8 +45,9 @@ public class SpeedDetector extends SensorObserverAdapter implements IFlightListe
 
 	String lcname = aDescr.getName().toLowerCase();
 	if (lcname.matches("gps.*speed")) {
-	  myValueDescrMap.put("GPS" + aDescr.getId(), aDescr);
-	  ourLogger.info("storing sensor value name: " + aDescr);
+	  ourLogger.info("" + aDescr);
+	  myGpsSpeedHandler = new GpsSpeedHandler(this, aDescr);
+	  addValueHandler(myGpsSpeedHandler);
 	  myGpsSpeedFactor = 1.0f;
 	  if (aDescr.getUnit().equals("m/s")) {
 		myGpsSpeedFactor = 3.6f;
@@ -53,8 +57,9 @@ public class SpeedDetector extends SensorObserverAdapter implements IFlightListe
 	  return;
 	}
 	if (lcname.matches("air.*speed|pivot.*speed")) {
-	  myValueDescrMap.put("AIR" + aDescr.getId(), aDescr);
-	  ourLogger.info("storing sensor value name: " + aDescr);
+	  ourLogger.info("" + aDescr);
+	  myAirSpeedHandler = new AirSpeedHandler(this, aDescr);
+	  addValueHandler(myAirSpeedHandler);
 	  myAirSpeedFactor = 1.0f;
 	  if (aDescr.getUnit().equals("m/s")) {
 		myAirSpeedFactor = 3.6f;
@@ -65,60 +70,8 @@ public class SpeedDetector extends SensorObserverAdapter implements IFlightListe
 	}
   }
 
-  @Override
-  public void valueMatch(SensorValue aValue) {
-	float valueInKMH = (float) aValue.getValue();
-	if (aValue.is(myValueDescrMap.get("AIR" + aValue.getSensorId()))) {
-	  valueInKMH = valueInKMH * myAirSpeedFactor;
-	  myAvgAirSpeed = getAvgSpeed(myAvgAirSpeed, valueInKMH, myAirSpeedCnt);
-	  myAirSpeedCnt++;
-	  // ourLogger.severe("air speed: " + valueInKMH);
-	}
-	if (aValue.is(myValueDescrMap.get("GPS" + aValue.getSensorId()))) {
-	  valueInKMH = valueInKMH * myGpsSpeedFactor;
-	  myAvgGpsSpeed = getAvgSpeed(myAvgGpsSpeed, valueInKMH, myGpsSpeedCnt);
-	  myGpsSpeedCnt++;
-	  // ourLogger.severe("gps speed: " + valueInKMH);
-	}
-	setVDistro((int) valueInKMH);
-	myMaxSpeed = Math.max(myMaxSpeed, (int) valueInKMH);
-	// ourLogger.severe("value: " + aValue.getValueIdx() + ":" + aValue.getValue());
-  }
-
-  
-  private int[] myVDistro;
-  private void setVDistro(int aValueInKMH) {
-	if (aValueInKMH > 0 && aValueInKMH < 300) {
-	  myVDistro[aValueInKMH]++;
-	}
-  }
-  
-  private int getVDistroMax() {
-	int retVal = 0;
-	int maxVal=0;
-	for (int i=0; i<myVDistro.length; i++) {
-	  if (maxVal < myVDistro[i]) {
-		maxVal = myVDistro[i];
-		retVal = i;
-	  }
-//	  if (i > 20 && i < 100) {
-//		System.out.println("V["+ i+"] = " + myVDistro[i]);
-//	  }
-	}
-//	System.out.println("Max = " + retVal);
-	return retVal;
-  }
-
-  float getAvgSpeed(float prev_avg, float x, int n) {
-	return (prev_avg * n + x) / (n + 1);
-  }
-
-  public int getMaxSpeed() {
-	return myMaxSpeed;
-  }
-
-  public int getAvgSpeed() {
-	return Math.max((int) myAvgAirSpeed, (int) myAvgGpsSpeed);
+  float getAvgValue(float aPreviousAvgValue, float aNewValue, int aValueCnt) {
+	return (aPreviousAvgValue * aValueCnt + aNewValue) / (aValueCnt + 1);
   }
 
   @Override
@@ -129,23 +82,65 @@ public class SpeedDetector extends SensorObserverAdapter implements IFlightListe
 
   @Override
   public void flightStart() {
-	// TODO Auto-generated method stub
-	
+	myGpsSpeedStatistics = new SummaryStatistics();
+	myAirSpeedStatistics = new SummaryStatistics();
   }
 
   @Override
   public void flightEnd(Flight aFlight) {
-	aFlight.setMaxSpeed(getMaxSpeed());
-	aFlight.setAvgSpeed(getAvgSpeed());
-	aFlight.setVnorm(getVDistroMax());
-	
-	myMaxSpeed = 0;
-	myAvgGpsSpeed = 0.0f;
-	myAvgAirSpeed = 0.0f;
-	myAirSpeedCnt = myGpsSpeedCnt = 0;
-	// System.out.println("new VDistro");
-	myVDistro = new int[300];
+	ourLogger.info("stats:" + myGpsSpeedStatistics);
 
+	if (myGpsSpeedStatistics.getN() > 10) {
+	  aFlight.addAttribute(NLSKey.CO_GEN_GPS_SPEED, myUnit, new Integer((int) myGpsSpeedStatistics.getMin()),
+		  new Integer((int) myGpsSpeedStatistics.getMax()), new Integer((int) myGpsSpeedStatistics.getMean()), true);
+	}
+	if (myAirSpeedStatistics.getN() > 10) {
+	  aFlight.addAttribute(NLSKey.CO_GEN_AIR_SPEED, myUnit, new Integer((int) myAirSpeedStatistics.getMin()),
+		  new Integer((int) myAirSpeedStatistics.getMax()), new Integer((int) myAirSpeedStatistics.getMean()), true);
+	}
   }
 
+  public void setAirSpeedValue(SensorValue aValue) {
+	if (null == myAirSpeedStatistics)
+	  return;
+	myAirSpeedStatistics.addValue(aValue.getValue() * myAirSpeedFactor);
+  }
+
+  public void setGpsSpeedValue(SensorValue aValue) {
+	if (null == myGpsSpeedStatistics)
+	  return;
+	myGpsSpeedStatistics.addValue(aValue.getValue() * myGpsSpeedFactor);
+  }
+}
+
+class AirSpeedHandler extends SensorValueHandlerAdapter {
+  // static private Logger ourLogger =
+  // Logger.getLogger(AirSpeedHandler.class.getName());
+
+  SpeedDetector myDetector;
+
+  public AirSpeedHandler(SpeedDetector aDetector, SensorValueDescription aDescr) {
+	super(aDescr);
+	this.myDetector = aDetector;
+  }
+
+  @Override
+  public void handle(SensorValue aValue) {
+//		ourLogger.severe("");
+	myDetector.setAirSpeedValue(aValue);
+  }
+}
+
+class GpsSpeedHandler extends SensorValueHandlerAdapter {
+  SpeedDetector myDetector;
+
+  public GpsSpeedHandler(SpeedDetector aDetector, SensorValueDescription aDescr) {
+	super(aDescr);
+	this.myDetector = aDetector;
+  }
+
+  @Override
+  public void handle(SensorValue aValue) {
+	myDetector.setGpsSpeedValue(aValue);
+  }
 }
