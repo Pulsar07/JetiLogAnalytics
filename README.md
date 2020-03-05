@@ -21,13 +21,13 @@ So it is very easy to get the overall pure flight duration for the given files. 
 * flight distance
 * RX voltage minimum 
 * list of sensors
-* list of alarms and number
+* list of events / alarms 
 * timestamps with the real start of flight
 * signal-pulse-distance (in case the an RXQ sensor is available)
 
  Here an short example of a scan result:
 	
-	Reading Log-Files:
+		Reading Log-Files:
 	  scanning log file: 20200301/14-05-54.log : model: X-Swift 3.2, number flights: 1
 	  scanning log file: 20200303/12-06-22.log : model: X-Swift 3.2, number flights: 0
 	  scanning log file: 20200303/15-24-31.log : model: X-Swift 3.2, number flights: 1
@@ -35,6 +35,7 @@ So it is very easy to get the overall pure flight duration for the given files. 
 	model statistic (1 models):
 	model                           : X-Swift 3.2
 	  number flights                : 2
+	  single flight (min/max)       : 00:35:58/00:52:26
 	  flight duration total         : 01:28:24
 	  log duration total            : 01:49:47
 	  height (min/max)              : 0/270 (in m)
@@ -47,6 +48,7 @@ So it is very easy to get the overall pure flight duration for the given files. 
 	    Alarm: Rx-Spannung          : 13
 	    Schw. Signal: Q             : 6
 	    Signalverlust               : 3
+	  sensors                       : [Rx REX10A, RxB RSat900, Tx, VarioGPS]
 	  flights / details             
 	    flight / timestamp              : 2020-03-01 14:06:52
 	      log file                      : 20200301/14-05-54.log
@@ -86,6 +88,7 @@ So it is very easy to get the overall pure flight duration for the given files. 
 	    Alarm: Rx-Spannung          : 13
 	    Schw. Signal: Q             : 6
 	    Signalverlust               : 3
+	
 	
 ## Software
 This git repository is a Eclipse workspace. So if you want to build the software for yourself, clone the project to a folder and set this folder as a Eclipse workspace.

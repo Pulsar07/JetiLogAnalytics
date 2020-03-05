@@ -18,7 +18,7 @@ public class JetiLogAnalyticsController {
   private boolean myDoFlightPrint = true;
   private boolean myDoDevicesPrint = true;
   private boolean myDoAlarmPrint = true;
-  private Pattern myModelSearchPattern;
+  private Pattern myModelSearchPattern = Pattern.compile(".*");
   
   public boolean isDoModelPrint() {
     return this.myDoModelPrint;
@@ -49,9 +49,8 @@ public class JetiLogAnalyticsController {
   }
 
   public void setModelFilter(String aSearch) {
-	ourLogger.severe(aSearch);
 	myModelSearchPattern = Pattern.compile(".*" + aSearch.replaceAll("\\|", ".*|.*") + ".*");
-	ourLogger.severe(myModelSearchPattern.toString());
+	ourLogger.info(myModelSearchPattern.toString());
   }
 
   public Pattern getModelFilter() {

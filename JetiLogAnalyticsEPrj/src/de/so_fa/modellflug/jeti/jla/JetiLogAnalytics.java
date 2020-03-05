@@ -53,8 +53,10 @@ public class JetiLogAnalytics {
    * 0.2.2 : 03/2020 RS : more controls to filter result data (model,
    * flight, devices)
    *
+   * 0.2.3 : 03/2020 RS : some minor fixes and doc
+   * 
    */
-  public static final String VERSION = "0.2.2";
+  public static final String VERSION = "0.2.3";
   public static final String APP_NAME = "JetiLogAnalytics";
   private final static Logger ourLogger = Logger.getLogger(JetiLogAnalytics.class.getName());
   static File ourLogFolder;

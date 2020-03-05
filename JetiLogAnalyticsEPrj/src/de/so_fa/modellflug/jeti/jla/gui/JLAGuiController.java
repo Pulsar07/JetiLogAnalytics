@@ -152,18 +152,23 @@ public class JLAGuiController {
   @FXML
   protected void onAction_FromDate(ActionEvent aEvent) {
 	LocalDate date = FX_FromDate.getValue();
-	GenericConfig.getInstance(JetiLogAnalytics.APP_NAME).setValue(JLAGui.CFG_FROM_DATE,
-		date.format(DateTimeFormatter.ISO_LOCAL_DATE));
+	String dateString = "";
+	if (null != date) {
+	  dateString = date.format(DateTimeFormatter.ISO_LOCAL_DATE);
+	} 
+	GenericConfig.getInstance(JetiLogAnalytics.APP_NAME).setValue(JLAGui.CFG_FROM_DATE, dateString);
 	GenericConfig.getInstance(JetiLogAnalytics.APP_NAME).saveConfig();
   }
 
   @FXML
   protected void onAction_ToDate(ActionEvent aEvent) {
 	LocalDate date = FX_ToDate.getValue();
-	GenericConfig.getInstance(JetiLogAnalytics.APP_NAME).setValue(JLAGui.CFG_TO_DATE,
-		date.format(DateTimeFormatter.ISO_LOCAL_DATE));
+	String dateString = "";
+	if (null != date) {
+	  dateString = date.format(DateTimeFormatter.ISO_LOCAL_DATE);
+	} 
+	GenericConfig.getInstance(JetiLogAnalytics.APP_NAME).setValue(JLAGui.CFG_TO_DATE, dateString);
 	GenericConfig.getInstance(JetiLogAnalytics.APP_NAME).saveConfig();
-
   }
 
   Thread myAnalysisThread;

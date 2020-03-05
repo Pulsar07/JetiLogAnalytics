@@ -69,9 +69,9 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
 	// ToDo if (aFolder.getName().matches([]))
 	ourLogger.info("add new LogData: " + aFolder + "/" + aFile.getName());
 	if (aFile == null || !JetiLogDataScanner.validateLogFile(aFolder, aFile)) {
-	  ourLogger.warning("ignoring log file : " + aFile);
-	  String folderString = null == aFolder ? "" : aFolder.getName();
-	  System.out.println(NLS.get(NLSKey.CO_LOG_FILE_NOT_AS_EXPECTED) + ": " + folderString + "/" + aFile.getName());
+	  ourLogger.info("ignoring log file : " + aFile);
+	  // String folderString = null == aFolder ? "" : aFolder.getName();
+	  // System.out.println(NLS.get(NLSKey.CO_LOG_FILE_NOT_AS_EXPECTED) + ": " + folderString + "/" + aFile.getName());
 	  return;
 	}
 	ourLogDataList.add(new JetiLogDataScanner(aFile, aFolder));
@@ -123,7 +123,7 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
 			  Matcher m = JetiLogAnalyticsController.getInstance().getModelFilter().matcher(myModelName);
 			  if (!m.matches()) {
 				// if the model name does not match with the fitler pattern, try the next one ;-)
-				ourLogger.severe("skipping model: " + myModelName);
+				ourLogger.info("skipping model: " + myModelName);
 				myIgnoreMark = true;
 				break;
 			  }
@@ -282,12 +282,12 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
 		  System.out.println(NLS.get(NLSKey.CO_ANALYSIS_STOPPED));
 		  return;
 		}
-		ourLogger.severe("scanning :" + data.getLogFolder().getName() + "/" + data.getLogFile().getName());
+		ourLogger.info("scanning :" + data.getLogFolder().getName() + "/" + data.getLogFile().getName());
 		data.analyse();
 		if (data.getIgnoreMark()) {
 		  continue;
 		}
-		ourLogger.severe("scanning data : model: " + data.getModelName() + ", flightcnt: " + data.getFlightCnt());
+		ourLogger.info("scanning data : model: " + data.getModelName() + ", flightcnt: " + data.getFlightCnt());
 		System.out.println("  " + NLS.get(NLSKey.CO_SCAN_LOG) + ": " + data.getLogFolder().getName() + "/"
 			+ data.getLogFile().getName() + " : " + NLS.get(NLSKey.CO_MODEL) + ": " + data.getModelName() + ", "
 			+ NLS.get(NLSKey.CO_FLIGHT_COUNT) + ": " + data.getFlightCnt());
