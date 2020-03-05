@@ -1,11 +1,5 @@
 package de.so_fa.modellflug.jeti.jla;
 
-/*
- * Version history:
- * 0.1.6: 
- * 0.1.7: signal flight detection added
- */
-
 import java.io.File;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -52,8 +46,11 @@ public class JetiLogAnalytics {
    * 
    * 0.2.0 : 03/2020 RS : added JavaFX GUI and RXQ
    * (http://www.so-fa.de/nh/JetiSensorRXQ) Detector
+   * 
+   * 0.2.1 : 03/2020 RS : more controls to filter result data (model, flight, devices)
+   *
    */
-  public static final String VERSION = "0.2.0";
+  public static final String VERSION = "0.2.1";
   public static final String APP_NAME = "JetiLogAnalytics";
   private final static Logger ourLogger = Logger.getLogger(JetiLogAnalytics.class.getName());
   static File ourLogFolder;

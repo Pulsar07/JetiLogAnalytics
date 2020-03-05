@@ -9,6 +9,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
 import de.so_fa.modellflug.jeti.jla.JetiLogAnalytics;
+import de.so_fa.modellflug.jeti.jla.JetiLogAnalyticsController;
 import de.so_fa.modellflug.jeti.jla.lang.NLS;
 import de.so_fa.modellflug.jeti.jla.lang.NLS.NLSKey;
 import de.so_fa.utils.config.GenericConfig;
@@ -19,6 +20,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -48,6 +50,12 @@ public class JLAGuiController {
   private TextArea FX_ResultArea;
   @FXML
   private Button FX_BrowsePath;
+  @FXML
+  private CheckBox FX_CheckModel;
+  @FXML
+  private CheckBox FX_CheckFlight;
+  @FXML
+  private CheckBox FX_CheckDevices;
 
   public void init() {
 
@@ -87,6 +95,31 @@ public class JLAGuiController {
   }
 
   @FXML
+  protected void onAction_CheckModel(ActionEvent aEvent) {
+	CheckBox src = (CheckBox)aEvent.getSource();
+	if (!src.isSelected()) {
+	  FX_CheckFlight.setSelected(false);
+	  FX_CheckDevices.setSelected(false);
+	}
+  }
+  
+  @FXML
+  protected void onAction_CheckFlight(ActionEvent aEvent) {
+	CheckBox src = (CheckBox)aEvent.getSource();
+	if (src.isSelected()) {
+	  FX_CheckModel.setSelected(true);
+	}
+  }
+  
+  @FXML
+  protected void onAction_CheckDevices(ActionEvent aEvent) {
+	CheckBox src = (CheckBox)aEvent.getSource();
+	if (src.isSelected()) {
+	  FX_CheckModel.setSelected(true);
+	}
+  }
+
+  @FXML
   protected void onAction_FromDate(ActionEvent aEvent) {
 
   }
@@ -99,6 +132,10 @@ public class JLAGuiController {
   @FXML
   protected void onAction_StartAnalysis(ActionEvent aEvent) {
 	FX_ResultArea.clear();
+	JetiLogAnalyticsController.getInstance().setDoModelPrint(FX_CheckModel.isSelected());
+	JetiLogAnalyticsController.getInstance().setDoFlightPrint(FX_CheckFlight.isSelected());
+	JetiLogAnalyticsController.getInstance().setDoDevicesPrint(FX_CheckDevices.isSelected());
+
 	Thread thread = new Thread(new Runnable() {
 	  @Override
 	  public void run() {

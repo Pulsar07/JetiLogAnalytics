@@ -7,21 +7,25 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
+import de.so_fa.modellflug.jeti.jla.JetiLogAnalyticsController;
 import de.so_fa.modellflug.jeti.jla.jetilog.JetiLogDataScanner;
+import de.so_fa.modellflug.jeti.jla.jetilog.SensorValueDescription;
 import de.so_fa.modellflug.jeti.jla.jetilog.TimeDuration;
 import de.so_fa.modellflug.jeti.jla.lang.NLS;
 import de.so_fa.modellflug.jeti.jla.lang.NLS.NLSKey;
 
 public class Model {
   private static Logger ourLogger = Logger.getLogger(Model.class.getName());
+  private static Map<String, Model> ourModels;
+
   private int myLogCount = 0;
   private int myLogTime = 0;
-
-  private static Map<String, Model> ourModels;
   private String myName;
   private List<Flight> myFlightList = new ArrayList<Flight>();
   private int myMaxHeight;
@@ -30,6 +34,7 @@ public class Model {
   int mySigDuraMax = 0;
   Map<String, Integer> myAlarms = new HashMap<String, Integer>();
   List<SensorAttribute> myAttributes = new ArrayList<SensorAttribute>();
+  Set<String> myDevices = new HashSet<String>();
 
   public static void init() {
 	ourModels = new HashMap<String, Model>();
@@ -89,6 +94,7 @@ public class Model {
 	// aData.getLogName());
 	model.myLogCount++;
 	model.myLogTime += aData.getLogDuration();
+	model.myDevices.addAll(SensorValueDescription.getSensorDevices());
   }
 
   public static Collection<Model> getModelCollection() {
@@ -106,6 +112,7 @@ public class Model {
 	attribute.noAvgValue();
 	myAttributes.add(attribute);
   }
+
   public int getLogTime() {
 	return myLogTime;
   }
@@ -122,7 +129,8 @@ public class Model {
 	return ftime;
   }
 
-  public Flight addFlight(Flight.FlightDetection aType, LocalDateTime aTime, int aFlightDuration, JetiLogDataScanner aLogData) {
+  public Flight addFlight(Flight.FlightDetection aType, LocalDateTime aTime, int aFlightDuration,
+	  JetiLogDataScanner aLogData) {
 	Flight f = null;
 	if (!myFlightList.isEmpty()) {
 	  f = myFlightList.get(myFlightList.size() - 1);
@@ -178,14 +186,21 @@ public class Model {
 	  List<String> alarmList = new ArrayList<String>(myAlarms.keySet());
 	  alarmList.sort(Comparator.naturalOrder());
 	  for (String alarm : alarmList) {
-		out.append("    " + NLS.fillWithBlanks(alarm, identation-2) + ": " + myAlarms.get(alarm));
+		out.append("    " + NLS.fillWithBlanks(alarm, identation - 2) + ": " + myAlarms.get(alarm));
+		out.append(System.getProperty("line.separator"));
+	  }
+	  if (JetiLogAnalyticsController.getInstance().isDoDevicesPrint()) {
+		out.append("  " + NLS.get(NLSKey.CO_DEVICES) + ":\n");
+		out.append("    " + myDevices);
 		out.append(System.getProperty("line.separator"));
 	  }
 	}
 	out.append("  " + NLS.get(NLSKey.CO_FLIGHTS, identation) + "");
 	out.append(System.getProperty("line.separator"));
-	for (Flight f : this.getFlights()) {
-	  out.append(f);
+	if (JetiLogAnalyticsController.getInstance().isDoFlightPrint()) {
+	  for (Flight f : this.getFlights()) {
+		out.append(f);
+	  }
 	}
 
 	return out.toString();
@@ -199,7 +214,6 @@ public class Model {
 	myMaxSpeed = Math.max(myMaxSpeed, aMaxSpeed);
   }
 
-
   public void setVoltageMin(float aValue) {
 	myMinVoltage = aValue;
   }
@@ -207,7 +221,7 @@ public class Model {
   public float getVoltageMin() {
 	return myMinVoltage;
   }
-  
+
   public int getMaxSpeed() {
 	return myMaxSpeed;
   }
@@ -284,7 +298,9 @@ public class Model {
 	}
 	ourLogger.info(totalOut.toString());
 
-	System.out.println(modelOut);
+	if (JetiLogAnalyticsController.getInstance().isDoModelPrint()) {
+	  System.out.println(modelOut);
+	}
 	System.out.println(totalOut);
 
   }

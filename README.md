@@ -20,6 +20,7 @@ So it is very easy to get the overall pure flight duration for the given files. 
 * flight speeds (air- and GPS-speed)
 * flight distance
 * RX voltage minimum 
+* list of sensors
 * list of alarms and number
 * timestamps with the real start of flight
 * signal-pulse-distance (in case the an RXQ sensor is available)
@@ -90,11 +91,11 @@ So it is very easy to get the overall pure flight duration for the given files. 
 This git repository is a Eclipse workspace. So if you want to build the software for yourself, clone the project to a folder and set this folder as a Eclipse workspace.
 
 JETI Log Analytics is a Java application (using JavaFX as GUI framework) build as a runnable jar file.
-The required JRE is at least a Java-8. Open-JDK should work.
+The required JRE is at least a 'Oracle Java 8' or 'OpenJDK 8´ (java-1.8.0-openjdk + java-1.8.0-openjdk-openjfx).
 On Windows and Mac this JetiLogAnalytics.jar - file can be easily started by double clicking the file. On Linux the wrapper script JetiLogAnalytics.sh can be used to start teh GUI based application.
 
 The JetiLogAnalytics.jar/-.sh - files are provided in the bin folder in this repository. 
-
+Attention: On GitHub downloading single files is not a easy thing. If you only want the runnable jar file and the wrapper script, use the green download button on the project page, select "Download ZIP" and extract only the two files in the bin folder.
 
 ## command line usage
 	$ /remote/netdata/nas/JetiLogAnalytics.sh --help

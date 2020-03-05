@@ -1,5 +1,6 @@
 package de.so_fa.modellflug.jeti.jla.jetilog;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -65,6 +66,9 @@ public class SensorValueDescription {
 	return ourSensorDevices.get(aDescr.myId);
   }
 
+  public static Collection<String> getSensorDevices() {
+	return ourSensorDevices.values();
+  }
   public static void updateSensorDevice(SensorValueDescription aDescr) {
 	// this is the one of sometimes more lines for a sensor device
 	String sensorDevice = SensorValueDescription.getSensorDevice(aDescr);
