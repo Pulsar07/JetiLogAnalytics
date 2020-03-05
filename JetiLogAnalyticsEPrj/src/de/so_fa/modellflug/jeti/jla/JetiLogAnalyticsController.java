@@ -1,6 +1,11 @@
 package de.so_fa.modellflug.jeti.jla;
 
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
+
 public class JetiLogAnalyticsController {
+  private final static Logger ourLogger = Logger.getLogger(JetiLogAnalyticsController.class.getName());
+  
   private static JetiLogAnalyticsController ourInstance = null;
   public static JetiLogAnalyticsController getInstance() {
 	if (null == ourInstance) {
@@ -12,6 +17,8 @@ public class JetiLogAnalyticsController {
   private boolean myDoModelPrint = true;
   private boolean myDoFlightPrint = true;
   private boolean myDoDevicesPrint = true;
+  private boolean myDoAlarmPrint = true;
+  private Pattern myModelSearchPattern;
   
   public boolean isDoModelPrint() {
     return this.myDoModelPrint;
@@ -41,4 +48,21 @@ public class JetiLogAnalyticsController {
 	
   }
 
+  public void setModelFilter(String aSearch) {
+	ourLogger.severe(aSearch);
+	myModelSearchPattern = Pattern.compile(".*" + aSearch.replaceAll("\\|", ".*|.*") + ".*");
+	ourLogger.severe(myModelSearchPattern.toString());
+  }
+
+  public Pattern getModelFilter() {
+	return myModelSearchPattern;
+  }
+
+  public void setDoAlarmPrint(boolean aDoIt) {
+	myDoAlarmPrint = aDoIt;
+  }
+  
+  public boolean isDoAlarmPrint() {
+	return myDoAlarmPrint;
+  }
 }

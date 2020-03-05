@@ -20,6 +20,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import de.so_fa.modellflug.jeti.jla.JetiLogAnalytics;
+import de.so_fa.modellflug.jeti.jla.JetiLogAnalyticsController;
 import de.so_fa.modellflug.jeti.jla.datamodel.Flight;
 import de.so_fa.modellflug.jeti.jla.datamodel.IFlightListener;
 import de.so_fa.modellflug.jeti.jla.datamodel.Model;
@@ -47,6 +49,11 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
   int myFlightCnt = 0;
   long myStartOffset = 0;
   long myActualTime = 0;
+  boolean myIgnoreMark = false;
+  
+  public boolean getIgnoreMark() {
+	return myIgnoreMark;
+  }
 
   public static void addSensorObserver(ISensorObserver aObserver) {
 	ourSensorObservers.add(aObserver);
@@ -113,6 +120,13 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
 		  if (strLine.startsWith("# ")) {
 			isJetiLog = true;
 			myModelName = strLine.substring(2);
+			  Matcher m = JetiLogAnalyticsController.getInstance().getModelFilter().matcher(myModelName);
+			  if (!m.matches()) {
+				// if the model name does not match with the fitler pattern, try the next one ;-)
+				ourLogger.severe("skipping model: " + myModelName);
+				myIgnoreMark = true;
+				break;
+			  }
 			for (ISensorObserver sensorObserver : ourSensorObservers) {
 			  sensorObserver.resetValueHandler();
 			  sensorObserver.newLogData(this);
@@ -264,9 +278,16 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
 	Collections.sort(ourLogDataList);
 	for (JetiLogDataScanner data : ourLogDataList) {
 	  try {
-		ourLogger.info("scanning :" + data.getLogFolder().getName() + "/" + data.getLogFile().getName());
+		if (JetiLogAnalytics.isStopped()) {
+		  System.out.println(NLS.get(NLSKey.CO_ANALYSIS_STOPPED));
+		  return;
+		}
+		ourLogger.severe("scanning :" + data.getLogFolder().getName() + "/" + data.getLogFile().getName());
 		data.analyse();
-		ourLogger.info("scanning data : model: " + data.getModelName() + ", flightcnt: " + data.getFlightCnt());
+		if (data.getIgnoreMark()) {
+		  continue;
+		}
+		ourLogger.severe("scanning data : model: " + data.getModelName() + ", flightcnt: " + data.getFlightCnt());
 		System.out.println("  " + NLS.get(NLSKey.CO_SCAN_LOG) + ": " + data.getLogFolder().getName() + "/"
 			+ data.getLogFile().getName() + " : " + NLS.get(NLSKey.CO_MODEL) + ": " + data.getModelName() + ", "
 			+ NLS.get(NLSKey.CO_FLIGHT_COUNT) + ": " + data.getFlightCnt());

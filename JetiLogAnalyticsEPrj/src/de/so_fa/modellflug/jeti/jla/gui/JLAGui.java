@@ -20,6 +20,8 @@ import javafx.stage.Stage;
 public class JLAGui extends Application {
   static private GenericConfig ourConfig;
   public static final String CFG_JETI_LOG_PATH = "JetiLogPath";
+  public static final String CFG_FROM_DATE = "FromDate";
+  public static final String CFG_TO_DATE = "ToDate";
 
   public static Logger ourLogger = Logger.getLogger(JLAGui.class.getName());
   private JLAGuiController myFXMLController;
@@ -44,6 +46,12 @@ public class JLAGui extends Application {
     // or set default values if not existing
     ourConfig.getValue(CFG_JETI_LOG_PATH, System.getProperty("user.home"), "Jeti log path",
         "path to the Jeti log folder");
+    ourConfig.getValue(CFG_FROM_DATE, null, "FromDate",
+        "date starting the analysis");
+    ourConfig.getValue(CFG_TO_DATE, null, "ToDate",
+        "date ending the analysis");
+
+    
   }
 
   @Override

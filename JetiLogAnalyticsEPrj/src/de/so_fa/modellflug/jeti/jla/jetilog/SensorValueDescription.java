@@ -21,7 +21,7 @@ public class SensorValueDescription {
   public SensorValueDescription(long aId, int aIdx, String aName, String aUnit) {
 	myId = aId;
 	myIndex = aIdx;
-	myName = aName.trim();
+	myName = aName;
 	if (aUnit != null) {
 	  myUnit = aUnit.trim();
 	}
@@ -61,7 +61,7 @@ public class SensorValueDescription {
   public String getSensorDevice() {
 	return SensorValueDescription.getSensorDevice(this);
   }
-  
+
   public static String getSensorDevice(SensorValueDescription aDescr) {
 	return ourSensorDevices.get(aDescr.myId);
   }
@@ -69,6 +69,7 @@ public class SensorValueDescription {
   public static Collection<String> getSensorDevices() {
 	return ourSensorDevices.values();
   }
+
   public static void updateSensorDevice(SensorValueDescription aDescr) {
 	// this is the one of sometimes more lines for a sensor device
 	String sensorDevice = SensorValueDescription.getSensorDevice(aDescr);
@@ -76,8 +77,11 @@ public class SensorValueDescription {
 	  ourSensorDevices.put(aDescr.getId(), aDescr.getName());
 	  ourLogger.info("new sensor device:" + aDescr.getId() + ":" + ourSensorDevices.get(aDescr.getId()));
 	} else {
-	  ourSensorDevices.put(aDescr.getId(), sensorDevice + " " + aDescr.getName());
-	  ourLogger.info("extended sensor device:" + aDescr.getId() + ":" + ourSensorDevices.get(aDescr.getId()));
+	  if (sensorDevice.endsWith(" ")) {
+		// add the description to a exiting one, but only if the exiting is not finished (" ")
+		ourSensorDevices.put(aDescr.getId(), sensorDevice + aDescr.getName());
+		ourLogger.info("extended sensor device:" + aDescr.getId() + ":" + ourSensorDevices.get(aDescr.getId()));
+	  }
 	}
   }
 }

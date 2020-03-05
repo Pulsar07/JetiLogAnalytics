@@ -12,6 +12,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+
+import org.apache.commons.math3.stat.descriptive.StatisticalSummary;
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
 import de.so_fa.modellflug.jeti.jla.JetiLogAnalyticsController;
 import de.so_fa.modellflug.jeti.jla.jetilog.JetiLogDataScanner;
@@ -34,7 +38,7 @@ public class Model {
   int mySigDuraMax = 0;
   Map<String, Integer> myAlarms = new HashMap<String, Integer>();
   List<SensorAttribute> myAttributes = new ArrayList<SensorAttribute>();
-  Set<String> myDevices = new HashSet<String>();
+  SensorDevices mySensorDevices = new SensorDevices();
 
   public static void init() {
 	ourModels = new HashMap<String, Model>();
@@ -94,10 +98,25 @@ public class Model {
 	// aData.getLogName());
 	model.myLogCount++;
 	model.myLogTime += aData.getLogDuration();
-	model.myDevices.addAll(SensorValueDescription.getSensorDevices());
+	if (aData.getFlightCnt() > 0) {
+	  model.addSensorDevices(SensorValueDescription.getSensorDevices());
+	}
+	// model.myDevices.addAll(SensorValueDescription.getSensorDevices());
+  }
+
+  // Set<String> myDevices = new HashSet<String>();
+
+  private void addSensorDevices(Collection<String> aSensorDevices) {
+	mySensorDevices.add(aSensorDevices);
+
+  }
+
+  String getSensorDevicesString() {
+	return mySensorDevices.toString();
   }
 
   public static Collection<Model> getModelCollection() {
+
 	return ourModels.values();
   }
 
@@ -153,57 +172,18 @@ public class Model {
 	return myFlightList.get(myFlightList.size() - 1);
   }
 
-  public String toString() {
-	if (this.getFlightCount() == 0) {
-	  return "";
-	}
-	int identation = 30;
-	StringBuffer out = new StringBuffer();
-	out.append(NLS.get(NLSKey.CO_MODEL, identation) + "  : ");
-	out.append(this.getName());
-	out.append(System.getProperty("line.separator"));
-	String name;
-	out.append("  " + NLS.get(NLSKey.CO_FLIGHT_COUNT, identation) + ": ");
-	out.append(this.getFlightCount());
-	out.append(System.getProperty("line.separator"));
-	out.append("  " + NLS.fillWithBlanks(NLS.get(NLSKey.CO_FLIGHTDURATION) + " " + NLS.get(NLSKey.CO_TOTAL), identation)
-		+ ": ");
-	out.append(TimeDuration.getString(this.getFlightTime()));
-	out.append(System.getProperty("line.separator"));
-	out.append(
-		"  " + NLS.fillWithBlanks(NLS.get(NLSKey.CO_LOGDURATION) + " " + NLS.get(NLSKey.CO_TOTAL), identation) + ": ");
-	out.append(TimeDuration.getString(this.getLogTime()));
-	out.append(System.getProperty("line.separator"));
-	for (SensorAttribute attr : myAttributes) {
-	  out.append("  " + NLS.fillWithBlanks(attr.getName(), identation) + ": ");
-	  out.append(attr.getValueString());
-	  out.append(System.getProperty("line.separator"));
-	}
+  private String getFlightMinMax() {
+	SummaryStatistics statistics = new SummaryStatistics();
 
-	if (myAlarms != null && !myAlarms.isEmpty()) {
-	  out.append("  " + NLS.get(NLSKey.CO_ALARMS) + ":\n");
-
-	  List<String> alarmList = new ArrayList<String>(myAlarms.keySet());
-	  alarmList.sort(Comparator.naturalOrder());
-	  for (String alarm : alarmList) {
-		out.append("    " + NLS.fillWithBlanks(alarm, identation - 2) + ": " + myAlarms.get(alarm));
-		out.append(System.getProperty("line.separator"));
-	  }
-	  if (JetiLogAnalyticsController.getInstance().isDoDevicesPrint()) {
-		out.append("  " + NLS.get(NLSKey.CO_DEVICES) + ":\n");
-		out.append("    " + myDevices);
-		out.append(System.getProperty("line.separator"));
-	  }
+	for (Flight f : myFlightList) {
+	  f.getFlightDuration();
+	  statistics.addValue(f.getFlightDuration());
 	}
-	out.append("  " + NLS.get(NLSKey.CO_FLIGHTS, identation) + "");
-	out.append(System.getProperty("line.separator"));
-	if (JetiLogAnalyticsController.getInstance().isDoFlightPrint()) {
-	  for (Flight f : this.getFlights()) {
-		out.append(f);
-	  }
-	}
-
-	return out.toString();
+	StringBuffer result = new StringBuffer();
+	result.append(TimeDuration.getString((int) statistics.getMin()));
+	result.append("/");
+	result.append(TimeDuration.getString((int) statistics.getMax()));
+	return result.toString();
   }
 
   public List<Flight> getFlights() {
@@ -302,6 +282,61 @@ public class Model {
 	  System.out.println(modelOut);
 	}
 	System.out.println(totalOut);
+  }
 
+  public String toString() {
+	if (this.getFlightCount() == 0) {
+	  return "";
+	}
+	int identation = 30;
+	StringBuffer out = new StringBuffer();
+	out.append(NLS.get(NLSKey.CO_MODEL, identation) + "  : ");
+	out.append(this.getName());
+	out.append(System.getProperty("line.separator"));
+	out.append("  " + NLS.get(NLSKey.CO_FLIGHT_COUNT, identation) + ": ");
+	out.append(this.getFlightCount());
+	out.append(System.getProperty("line.separator"));
+	out.append("  " + NLS.get(NLSKey.CO_FLIGHT_MINMAX, identation) + ": ");
+	out.append(this.getFlightMinMax());
+	out.append(System.getProperty("line.separator"));
+	out.append("  " + NLS.fillWithBlanks(NLS.get(NLSKey.CO_FLIGHTDURATION) + " " + NLS.get(NLSKey.CO_TOTAL), identation)
+		+ ": ");
+	out.append(TimeDuration.getString(this.getFlightTime()));
+	out.append(System.getProperty("line.separator"));
+
+	out.append(
+		"  " + NLS.fillWithBlanks(NLS.get(NLSKey.CO_LOGDURATION) + " " + NLS.get(NLSKey.CO_TOTAL), identation) + ": ");
+	out.append(TimeDuration.getString(this.getLogTime()));
+	out.append(System.getProperty("line.separator"));
+	for (SensorAttribute attr : myAttributes) {
+	  out.append("  " + NLS.fillWithBlanks(attr.getName(), identation) + ": ");
+	  out.append(attr.getValueString());
+	  out.append(System.getProperty("line.separator"));
+	}
+
+	if (myAlarms != null && !myAlarms.isEmpty() && JetiLogAnalyticsController.getInstance().isDoAlarmPrint()) {
+	  out.append("  " + NLS.get(NLSKey.CO_ALARMS) + ":\n");
+
+	  List<String> alarmList = new ArrayList<String>(myAlarms.keySet());
+	  alarmList.sort(Comparator.naturalOrder());
+	  for (String alarm : alarmList) {
+		out.append("    " + NLS.fillWithBlanks(alarm, identation - 2) + ": " + myAlarms.get(alarm));
+		out.append(System.getProperty("line.separator"));
+	  }
+	}
+	if (JetiLogAnalyticsController.getInstance().isDoDevicesPrint()) {
+	  out.append("  " + NLS.get(NLSKey.CO_DEVICES, identation) + ": ");
+	  out.append(getSensorDevicesString());
+	  out.append(System.getProperty("line.separator"));
+	}
+	if (JetiLogAnalyticsController.getInstance().isDoFlightPrint()) {
+	  out.append("  " + NLS.get(NLSKey.CO_FLIGHTS, identation) + "");
+	  out.append(System.getProperty("line.separator"));
+	  for (Flight f : this.getFlights()) {
+		out.append(f);
+	  }
+	}
+
+	return out.toString();
   }
 }

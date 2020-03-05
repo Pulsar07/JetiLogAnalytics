@@ -10,6 +10,7 @@
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
@@ -50,7 +51,7 @@
       <items>
       <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="545.0" prefWidth="430.0" SplitPane.resizableWithParent="false">
                <children>
-                  <TextArea fx:id="FX_ResultArea" editable="false" prefHeight="512.0" prefWidth="721.0" promptText="%FX_ResultAreaPromptText" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <TextArea fx:id="FX_ResultArea" editable="false" prefHeight="512.0" prefWidth="721.0" promptText="%FX_ResultAreaPromptText" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                      <font>
                         <Font name="Monospaced Regular" size="13.0" />
                      </font>
@@ -60,7 +61,7 @@
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                </padding>
       </AnchorPane>
-        <AnchorPane maxWidth="-Infinity" minWidth="-Infinity" prefWidth="165.0" SplitPane.resizableWithParent="false">
+        <AnchorPane maxWidth="-Infinity" minWidth="-Infinity" prefWidth="200.0" SplitPane.resizableWithParent="false">
           <children>
                   <VBox layoutX="-41.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                      <children>
@@ -69,20 +70,34 @@
                               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                            </padding>
                         </Label>
-                        <DatePicker fx:id="FX_FromDate" maxWidth="1.7976931348623157E308" />
+                        <DatePicker fx:id="FX_FromDate" maxWidth="1.7976931348623157E308" onAction="#onAction_FromDate" />
                         <Label text="%FX_ToDateLabel">
                            <padding>
                               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                            </padding>
                         </Label>
-                        <DatePicker fx:id="FX_ToDate" maxWidth="1.7976931348623157E308" />
-                        <Button fx:id="FX_BrowsePath" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onAction_BrowsePath" text="%FX_BrowsePath" />
+                        <DatePicker fx:id="FX_ToDate" maxWidth="1.7976931348623157E308" onAction="#onAction_ToDate" />
+                        <Button fx:id="FX_BrowsePath" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onAction_BrowsePath" text="%FX_BrowsePath">
+                           <VBox.margin>
+                              <Insets bottom="5.0" top="5.0" />
+                           </VBox.margin></Button>
+                        <Label text="%FX_LabelModelFilter">
+                           <padding>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                           </padding>
+                        </Label>
+                        <TextField fx:id="FX_TextFieldModelFilter" onAction="#onAction_TextFieldModelFilter" promptText="%FX_TextFieldModelFilterPrompt" />
                         <CheckBox fx:id="FX_CheckModel" mnemonicParsing="false" onAction="#onAction_CheckModel" selected="true" text="%FX_CheckModel">
                            <padding>
                               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                            </padding>
                         </CheckBox>
                         <CheckBox fx:id="FX_CheckFlight" mnemonicParsing="false" onAction="#onAction_CheckFlight" selected="true" text="%FX_CheckFlight">
+                           <padding>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                           </padding>
+                        </CheckBox>
+                        <CheckBox fx:id="FX_CheckAlarm" mnemonicParsing="false" onAction="#onAction_CheckAlarm" selected="true" text="%FX_CheckAlarm">
                            <padding>
                               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                            </padding>

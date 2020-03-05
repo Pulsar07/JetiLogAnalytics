@@ -47,10 +47,14 @@ public class JetiLogAnalytics {
    * 0.2.0 : 03/2020 RS : added JavaFX GUI and RXQ
    * (http://www.so-fa.de/nh/JetiSensorRXQ) Detector
    * 
-   * 0.2.1 : 03/2020 RS : more controls to filter result data (model, flight, devices)
+   * 0.2.1 : 03/2020 RS : more controls to filter result data (model, flight,
+   * devices)
+   *
+   * 0.2.2 : 03/2020 RS : more controls to filter result data (model,
+   * flight, devices)
    *
    */
-  public static final String VERSION = "0.2.1";
+  public static final String VERSION = "0.2.2";
   public static final String APP_NAME = "JetiLogAnalytics";
   private final static Logger ourLogger = Logger.getLogger(JetiLogAnalytics.class.getName());
   static File ourLogFolder;
@@ -58,6 +62,7 @@ public class JetiLogAnalytics {
   static LocalDate ourToDate = null;
 
   static private boolean ourGUISupport = true;
+  private static boolean ourInterruptProcessing;
 
   public static void main(String[] aArgs) {
 	try {
@@ -142,6 +147,7 @@ public class JetiLogAnalytics {
 
   public static void startAnalysis(File aJetiLogFolder, LocalDate aFrom, LocalDate aTo) {
 	try {
+	  ourInterruptProcessing = false;
 	  JetiLogDataScanner.init();
 	  Model.init();
 	  Flight.init();
@@ -209,5 +215,13 @@ public class JetiLogAnalytics {
 	LocalDateTime ld = LocalDateTime.parse(ts, parseFormatter);
 	System.out.println("date : " + ts + " = " + ld.format(outputFormatter));
 	System.exit(0);
+  }
+
+  public static void stop() {
+	ourInterruptProcessing = true;
+  }
+
+  public static boolean isStopped() {
+	return ourInterruptProcessing;
   }
 }
