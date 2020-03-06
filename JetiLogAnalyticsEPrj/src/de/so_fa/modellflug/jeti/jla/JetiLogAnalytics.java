@@ -55,8 +55,10 @@ public class JetiLogAnalytics {
    *
    * 0.2.3 : 03/2020 RS : some minor fixes and doc
    * 
+   * 0.2.4 : 03/2020 RS : major bug for negative sensor values fixed, FlightHeightDetector optimized
+   * 
    */
-  public static final String VERSION = "0.2.3";
+  public static final String VERSION = "0.2.4";
   public static final String APP_NAME = "JetiLogAnalytics";
   private final static Logger ourLogger = Logger.getLogger(JetiLogAnalytics.class.getName());
   static File ourLogFolder;

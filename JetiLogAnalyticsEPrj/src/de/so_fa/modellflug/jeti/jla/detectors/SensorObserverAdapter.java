@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import de.so_fa.modellflug.jeti.jla.jetilog.JetiLogDataScanner;
+import de.so_fa.modellflug.jeti.jla.jetilog.SensorValue;
 import de.so_fa.modellflug.jeti.jla.jetilog.SensorValueDescription;
 
 public abstract  class SensorObserverAdapter implements ISensorObserver {
@@ -45,7 +46,6 @@ public abstract  class SensorObserverAdapter implements ISensorObserver {
   public void addSensorDescr(String aKey, SensorValueDescription aDescr) {
 	myValueDescrMap.put(aKey, aDescr);
   }
-
 
   public void addValueHandler(ISensorValueHandler aHandler) {
 	myValueHandlerList.add(aHandler);

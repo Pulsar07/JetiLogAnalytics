@@ -1,5 +1,7 @@
 package de.so_fa.modellflug.jeti.jla.detectors;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -15,9 +17,7 @@ import de.so_fa.modellflug.jeti.jla.lang.NLS.NLSKey;
 public class FlightHeightDetector extends SensorObserverAdapter implements IFlightListener {
   private static Logger ourLogger = Logger.getLogger(FlightHeightDetector.class.getName());
 
-  private float myCorrectionFactor;
-  HeightHandler myHeightHandler;
-  SummaryStatistics myStatistics;
+  List<HeightHandler> myHeightHandlerList;
   String myUnit = "m";
 
   public FlightHeightDetector() {
@@ -42,45 +42,57 @@ public class FlightHeightDetector extends SensorObserverAdapter implements IFlig
   @Override
   public void nameMatch(SensorValueDescription aDescr) {
 
-	myCorrectionFactor = 1.0f;
-	String lcname = aDescr.getName().toLowerCase();
+	ourLogger.info("adding height description: " + aDescr);
+	HeightHandler handler = new HeightHandler(this, aDescr);
+	addValueHandler(handler);
+	if (aDescr.getUnit().equals("ft")) {
+	  handler.setCorrectionFactor(0.3048f);
+	}
+	myHeightHandlerList.add(handler);
+
+//	String lcname = aDescr.getName().toLowerCase();
 	// ourLogger.severe("check descr: " + aDescr);
 	// there are more than one sensor values fitting the height pattern.
 	// absolute height: is not what we want
 	// height: is what we want, but only if relative height is not exiting
 	// relative height, is exactly what we, want
-	if (lcname.matches("abs.*hoehe|abs.*alti.*|abs.*height")) {
-	  // absolute height, cannot be used for flight detection
-	  return;
-	}
-	if (lcname.matches("rel.*hoehe|rel.*alti.*|rel.*height")) {
-	  // relative height, will be used if existing
-	  ourLogger.info("rel height: " + aDescr);
-	  myHeightHandler = new HeightHandler(this, aDescr);
-	  addValueHandler(myHeightHandler);
-	  if (aDescr.getUnit().equals("ft")) {
-		myCorrectionFactor = 0.3048f;
-	  }
-	  return;
-	}
-	if (lcname.matches("hoehe|alti.*|height")) {
-	  // height, will be used if existing, if relative is not exiting
-	  if (myHeightHandler == null) {
-		ourLogger.info("height: " + aDescr);
-		myHeightHandler = new HeightHandler(this, aDescr);
-		addValueHandler(myHeightHandler);
-		if (aDescr.getUnit().equals("ft")) {
-		  myCorrectionFactor = 0.3048f;
-		}
-	  }
-	  return;
-	}
+//	if (lcname.matches("abs.*hoehe|abs.*alti.*|abs.*height")) {
+//	  // absolute height, cannot be used for flight detection
+//	  ourLogger.severe("abs height: " + aDescr);
+//	  HeightHandler handler = new HeightHandler(this, aDescr);
+//	  addValueHandler(handler);
+//	  if (aDescr.getUnit().equals("ft")) {
+//		handler.setCorrectionFactor(0.3048f);
+//	  }
+//	  myHeightHandlerList.add(handler);
+//	  return;
+//	}
+//	if (lcname.matches("rel.*hoehe|rel.*alti.*|rel.*height")) {
+//	  // relative height, will be used if existing
+//	  ourLogger.severe("rel height: " + aDescr);
+//	  myHeightHandlerRelative = new HeightHandler(this, aDescr);
+//	  addValueHandler(myHeightHandlerRelative);
+//	  if (aDescr.getUnit().equals("ft")) {
+//		myHeightHandlerRelative.setCorrectionFactor(0.3048f);
+//	  }
+//	  return;
+//	}
+//	if (lcname.matches("hoehe|alti.*|height")) {
+//	  // relative height, will be used if existing
+//	  ourLogger.severe("height: " + aDescr);
+//	  myHeightHandler = new HeightHandler(this, aDescr);
+//	  addValueHandler(myHeightHandler);
+//	  if (aDescr.getUnit().equals("ft")) {
+//		myHeightHandler.setCorrectionFactor(0.3048f);
+//	  }
+//	  return;
+//	}
   }
 
   @Override
   public void newLogData(JetiLogDataScanner aLogData) {
 	super.newLogData(aLogData);
-	myHeightHandler = null;
+	myHeightHandlerList = new ArrayList<HeightHandler>();
   }
 
   @Override
@@ -89,35 +101,68 @@ public class FlightHeightDetector extends SensorObserverAdapter implements IFlig
 
   @Override
   public void flightStart() {
-	myStatistics = new SummaryStatistics();
+	ourLogger.info("reset result statistic and offset values");
+	for (HeightHandler handler : myHeightHandlerList) {
+	  handler.reset();
+	}
   }
 
   @Override
   public void flightEnd(Flight aFlight) {
-	if (myStatistics.getN() > 10) {
-	  aFlight.addAttribute(NLSKey.CO_GEN_HEIGHT, myUnit, new Integer((int) myStatistics.getMin()),
-		  new Integer((int) myStatistics.getMax()), new Integer((int) myStatistics.getMean()), true);
+	SummaryStatistics s = null;
+	for (HeightHandler handler : myHeightHandlerList) {
+	  ourLogger.info(handler.toString() + "  " + handler.getStatistics().toString());
+	  if (handler.getStatistics().getN() < 100) {
+		continue;
+	  }
+	  if (s == null) {
+		ourLogger.info("first: " + handler.toString() + "  " + handler.getStatistics().toString());
+		s = handler.getStatistics();
+	  } else {
+		float q = ((float) s.getN())/handler.getStatistics().getN();
+		if (q < 0.5f) {
+		    ourLogger.info("more content: " + handler.toString() + "  " + handler.getStatistics().toString());
+		  SummaryStatistics.copy(handler.getStatistics(), s);		  
+		} else if (handler.getStatistics().getN() > 100 && handler.getStatistics().getSum() < s.getSum()) {
+		    ourLogger.info("better content: " + handler.toString() + "  " + handler.getStatistics().toString());
+		  SummaryStatistics.copy(handler.getStatistics(), s);
+		}
+	  }
+	}
+
+	if (s != null && s.getN() > 10) {
+	  ourLogger.info("result : " + s.toString());
+	  aFlight.addAttribute(NLSKey.CO_GEN_HEIGHT, myUnit, new Integer((int) s.getMin()), new Integer((int) s.getMax()),
+		  new Integer((int) s.getMean()), true);
 	}
   }
-
-  public void setHeight(SensorValue aValue) {
-	if (null == myStatistics)
-	  return;
-	myStatistics.addValue(aValue.getValue() * myCorrectionFactor);
-  }
-
 }
 
 class HeightHandler extends SensorValueHandlerAdapter {
-  private FlightHeightDetector myDetector;
+  private static Logger ourLogger = Logger.getLogger(HeightHandler.class.getName());
+  SummaryStatistics myStatistic;
+
+  public SummaryStatistics getStatistics() {
+	if (myStatistic == null) {
+	  return new SummaryStatistics();
+	}
+	return myStatistic;
+  }
+
+  public void reset() {
+	myStatistic = null;
+  }
 
   public HeightHandler(FlightHeightDetector aDetector, SensorValueDescription aDescr) {
 	super(aDescr);
-	myDetector = aDetector;
   }
 
   @Override
   public void handle(SensorValue aValue) {
-	myDetector.setHeight(aValue);
+	if (null == myStatistic) {
+	  myStatistic = new SummaryStatistics();
+	}
+	myStatistic.addValue(aValue.getValue());
+	// ourLogger.severe(this + "  " + aValue);
   }
 }

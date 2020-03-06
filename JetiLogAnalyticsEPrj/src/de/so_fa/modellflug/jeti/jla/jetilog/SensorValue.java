@@ -16,11 +16,16 @@ public class SensorValue {
   double myValue;
   String myAlarmValue;
 
-  /*
-   * 004691301;0000000000;15;16;0;900MHz Tx aktiviert;0;0 002381367;4392122371;1;
-   * 1;2;848;2;1;0;4;3;1;0;4;4;1;0;39 | | | | | | | | | | | value | | | | decimal
-   * places | | | type | | value index | sensor id timestamp
-   */
+  // 004691301;0000000000;15;16;0;900MHz Tx aktiviert;0;0
+  // 002381367;4392122371;1;1;2;848;2;1;0;4;3;1;0;4;4;1;0;39
+  // |.........|......... |.|.|.|
+  // |.........|......... |.|.|.value
+  // |.........|......... |.|.decimal places
+  // |.........|......... |.type
+  // |.........|......... value index
+  // |.........sensor id
+  // timestamp
+ 
 
   public SensorValue(long aTimeStamp, long aSensorId, StringTokenizer aTokenizer) {
 	try {
@@ -56,8 +61,11 @@ public class SensorValue {
 	  case 4: // 4 int22_t Data type 22b (-2097151 ̧2097151)
 	  case 8:
 		myRawVal = Long.parseLong(aTokenizer.nextToken());
-		if (Math.abs(myRawVal) < 2097151) {
+		if (myRawVal < 2097151) {
 		  myValue = myRawVal / Math.pow(10, myDecimalPlaces);
+		  isValid = true;
+		} else {
+		  myValue = (myRawVal - 4294967296L) / Math.pow(10, myDecimalPlaces);
 		  isValid = true;
 		}
 		break;
@@ -117,7 +125,8 @@ public class SensorValue {
   }
 
   /**
-   * @return true if the given description fits to the this value, else return false 
+   * @return true if the given description fits to the this value, else return
+   *         false
    */
   public boolean is(SensorValueDescription aSensorDescr) {
 	boolean retVal = false;
@@ -136,8 +145,10 @@ public class SensorValue {
 	retVal.append(myValueIdx);
 	retVal.append(",");
 	retVal.append(myType);
-	retVal.append(",");
+	retVal.append(", raw: ");
 	retVal.append(myRawVal);
+	retVal.append(", ok: ");
+	retVal.append(myValue);
 	retVal.append("]");
 	return retVal.toString();
   }
