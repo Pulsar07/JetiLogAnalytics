@@ -90,16 +90,8 @@ So it is very easy to get the overall pure flight duration for the given files. 
 	    Signalverlust               : 3
 	
 	
-## Software
-This git repository is a Eclipse workspace. So if you want to build the software for yourself, clone the project to a folder and set this folder as a Eclipse workspace.
 
-JETI Log Analytics is a Java application (using JavaFX as GUI framework) build as a runnable jar file.
-The required JRE is at least a 'Oracle Java 8' or 'OpenJDK 8´ (java-1.8.0-openjdk + java-1.8.0-openjdk-openjfx).
-On Windows and Mac this JetiLogAnalytics.jar - file can be easily started by double clicking the file. On Linux the wrapper script JetiLogAnalytics.sh can be used to start teh GUI based application.
-
-The JetiLogAnalytics.jar/-.sh - files are provided in the bin folder in this repository. 
-Attention: On GitHub downloading single files is not a easy thing. If you only want the runnable jar file and the wrapper script, use the green download button on the project page, select "Download ZIP" and extract only the two files in the bin folder.
-
+Some more details in German and an browser based version of JetiLogAnalytics is available at [JetiLogAnalytics at Albatros].
 ## command line usage
 	$ /remote/netdata/nas/JetiLogAnalytics.sh --help
 	usage: JetiLogAnalytics [option]
@@ -112,3 +104,19 @@ Attention: On GitHub downloading single files is not a easy thing. If you only w
 	 --from <YYYY-MM-DD>          date to start analysing log files, if omitted all log files found are analysed
 	 --to <YYYY-MM-DD>            date to end analysing log files, if omitted all log files found are analysed
 	
+## Software
+This git repository is a Eclipse workspace. So if you want to build the software for yourself, clone the project to a folder and set this folder as a Eclipse workspace.
+
+JETI Log Analytics is a Java application (using JavaFX as GUI framework) build as a runnable jar file.
+The required JRE is at least a 'Oracle Java 8' or 'OpenJDK 8´ (java-1.8.0-openjdk + java-1.8.0-openjdk-openjfx).
+On Windows and Mac this JetiLogAnalytics.jar - file can be easily started by double clicking the file. On Linux the wrapper script JetiLogAnalytics.sh can be used to start the GUI based application.
+
+The JetiLogAnalytics.jar/-.sh - files are provided in the bin folder in this repository. 
+Attention: On GitHub downloading single files is not a easy thing. If you only want the runnable jar file and the wrapper script, use the green download button on the project page, select "Download ZIP" and extract only the two files in the bin folder.
+
+## Development
+The user interface is based on JavaFX and is designed with [Scene Builder] for Java 8
+
+[Scene Builder]: https://gluonhq.com/products/scene-builder/  "Scene Builder: Drag & Drop,
+Rapid Application Development."
+[JetiLogAnalytics at Albatros]: http://www.so-fa.de/nh/JetiLogAnalytics "JETI Log Analytics German page Albatros"
