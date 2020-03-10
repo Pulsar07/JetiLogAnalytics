@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 import de.so_fa.modellflug.jeti.jla.datamodel.Flight;
 import de.so_fa.modellflug.jeti.jla.datamodel.Model;
+import de.so_fa.modellflug.jeti.jla.datamodel.Total;
 import de.so_fa.modellflug.jeti.jla.detectors.AlarmDetector;
 import de.so_fa.modellflug.jeti.jla.detectors.DistanceDetector;
 import de.so_fa.modellflug.jeti.jla.detectors.FlightDetectorSignalStrength;
@@ -50,15 +51,18 @@ public class JetiLogAnalytics {
    * 0.2.1 : 03/2020 RS : more controls to filter result data (model, flight,
    * devices)
    *
-   * 0.2.2 : 03/2020 RS : more controls to filter result data (model,
-   * flight, devices)
+   * 0.2.2 : 03/2020 RS : more controls to filter result data (model, flight,
+   * devices)
    *
    * 0.2.3 : 03/2020 RS : some minor fixes and doc
    * 
-   * 0.2.4 : 03/2020 RS : major bug for negative sensor values fixed, FlightHeightDetector optimized
+   * 0.2.4 : 03/2020 RS : major bug for negative sensor values fixed,
+   * FlightHeightDetector optimized
+   * 
+   * 0.2.5 : 03/2020 RS : more details in total statistic
    * 
    */
-  public static final String VERSION = "0.2.4";
+  public static final String VERSION = "0.2.5";
   public static final String APP_NAME = "JetiLogAnalytics";
   private final static Logger ourLogger = Logger.getLogger(JetiLogAnalytics.class.getName());
   static File ourLogFolder;
@@ -142,14 +146,16 @@ public class JetiLogAnalytics {
 		  ourLogger.severe("no valid log folder given : " + ourLogFolder.getPath());
 		  System.exit(-1);
 		}
-		JetiLogAnalytics.startAnalysis(ourLogFolder, ourFromDate, ourToDate);
+		JetiLogAnalyticsController.getInstance().setFromRange(ourFromDate);
+		JetiLogAnalyticsController.getInstance().setToRange(ourToDate);
+		JetiLogAnalytics.startAnalysis(ourLogFolder);
 	  }
 	} catch (Throwable e) {
 	  ourLogger.log(Level.SEVERE, "unexpected error:", e);
 	}
   }
 
-  public static void startAnalysis(File aJetiLogFolder, LocalDate aFrom, LocalDate aTo) {
+  public static void startAnalysis(File aJetiLogFolder) {
 	try {
 	  ourInterruptProcessing = false;
 	  JetiLogDataScanner.init();
@@ -157,8 +163,17 @@ public class JetiLogAnalytics {
 	  Flight.init();
 	  File[] files = aJetiLogFolder.listFiles();
 
-	  traverseJetiLogFiles(files, null, aFrom, aTo);
+	  traverseJetiLogFiles(files, null, JetiLogAnalyticsController.getInstance().getFromRange(),
+		  JetiLogAnalyticsController.getInstance().getToRange());
 
+	  if (JetiLogAnalyticsController.getInstance().getFromRange() == null
+		  || JetiLogAnalyticsController.getInstance().getFromRange().equals(LocalDate.MIN)) {
+		JetiLogAnalyticsController.getInstance().setFromRange(JetiLogDataScanner.getFirstDate());
+	  }
+	  if (JetiLogAnalyticsController.getInstance().getToRange() == null
+		  || JetiLogAnalyticsController.getInstance().getToRange().equals(LocalDate.MAX)) {
+		JetiLogAnalyticsController.getInstance().setToRange(JetiLogDataScanner.getLastDate());
+	  }
 	  JetiLogDataScanner.addSensorObserver(new FlightHeightDetector());
 	  JetiLogDataScanner.addSensorObserver(new FlightDetectorSignalStrength());
 	  JetiLogDataScanner.addSensorObserver(new SpeedDetector());
@@ -170,6 +185,7 @@ public class JetiLogAnalytics {
 	  System.out.println("\n" + NLS.get(NLSKey.CO_KEY_READLOG) + ":");
 	  JetiLogDataScanner.analyseData();
 	  Model.printResult();
+	  Total.printResult();
 	} catch (
 
 	Throwable e) {

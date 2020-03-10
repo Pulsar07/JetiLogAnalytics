@@ -56,7 +56,7 @@ public class DistanceDetector extends SensorObserverAdapter implements IFlightLi
   @Override
   public void flightEnd(Flight aFlight) {
 	if (myStatistics.getN() > 10) {
-	  aFlight.addAttribute(NLSKey.CO_GEN_DISTANCE, myUnit, new Integer((int) myStatistics.getMin()),
+	  aFlight.addAttribute(NLSKey.CO_GEN_DISTANCE, myUnit, null,
 		  new Integer((int) myStatistics.getMax()), new Integer((int) myStatistics.getMean()), true);
 	}
   }

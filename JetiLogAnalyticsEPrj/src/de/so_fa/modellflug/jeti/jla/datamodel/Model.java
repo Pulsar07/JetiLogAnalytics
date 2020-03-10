@@ -215,101 +215,51 @@ public class Model {
   }
 
   public static void printResult() {
-	int cntLog = 0;
-	int cntFlights = 0;
-	int timeFlights = 0;
-	int timeLogs = 0;
-	Map<String, Integer> allAlarms = new HashMap<String, Integer>();
 	StringBuffer modelOut = new StringBuffer();
 	modelOut.append("\n" + NLS.get(NLSKey.CO_MODEL_STATISTIC) + " (" + Model.getModelCollection().size() + " "
 		+ NLS.get(NLSKey.CO_MODELS) + "):\n");
 	// System.out.println(out);
 	for (Model model : Model.getModelCollection()) {
 	  modelOut.append(model);
-	  // System.out.println(model);
-	  ourLogger.info(model.toString());
-	  cntLog += model.getLogCount();
-	  timeLogs += model.getLogTime();
-	  cntFlights += model.getFlightCount();
-	  timeFlights += model.getFlightTime();
-	  Map<String, Integer> alarmMap = model.getAlarms();
-	  if (alarmMap != null && !alarmMap.isEmpty()) {
-		for (String alarm : alarmMap.keySet()) {
-		  int alarmCount = 0;
-		  if (allAlarms.containsKey(alarm)) {
-			alarmCount = allAlarms.get(alarm);
-		  }
-		  allAlarms.put(alarm, alarmCount + alarmMap.get(alarm));
-		}
-	  }
 	}
-
-	int indentation = 30;
-	StringBuffer totalOut = new StringBuffer();
-	totalOut.append("\n" + NLS.get(NLSKey.CO_STATISTIC_TOTAL, indentation + 2) + "");
-	totalOut.append("\n");
-	totalOut
-		.append("  " + NLS.fillWithBlanks(NLS.get(NLSKey.CO_LOG_COUNT) + " " + NLS.get(NLSKey.CO_TOTAL), indentation)
-			+ ": " + cntLog);
-	totalOut.append("\n");
-	totalOut
-		.append("  " + NLS.fillWithBlanks(NLS.get(NLSKey.CO_LOGDURATION) + " " + NLS.get(NLSKey.CO_TOTAL), indentation)
-			+ ": " + TimeDuration.getString(timeLogs));
-	totalOut.append("\n");
-	totalOut.append(
-		"  " + NLS.fillWithBlanks(NLS.get(NLSKey.CO_MODEL_COUNT), indentation) + ": " + ourModels.entrySet().size());
-	totalOut.append("\n");
-	totalOut
-		.append("  " + NLS.fillWithBlanks(NLS.get(NLSKey.CO_FLIGHT_COUNT) + " " + NLS.get(NLSKey.CO_TOTAL), indentation)
-			+ ": " + cntFlights);
-	totalOut.append("\n");
-	totalOut.append(
-		"  " + NLS.fillWithBlanks(NLS.get(NLSKey.CO_FLIGHTDURATION) + " " + NLS.get(NLSKey.CO_TOTAL), indentation)
-			+ ": " + TimeDuration.getString(timeFlights));
-	totalOut.append("\n");
-	if (allAlarms != null && !allAlarms.isEmpty()) {
-	  totalOut.append("  " + NLS.get(NLSKey.CO_ALARMS, indentation) + ":\n");
-	  List<String> alarmList = new ArrayList<String>(allAlarms.keySet());
-	  alarmList.sort(Comparator.naturalOrder());
-	  for (String alarm : alarmList) {
-		totalOut.append("    " + NLS.fillWithBlanks(alarm, indentation - 2) + ": " + allAlarms.get(alarm));
-		totalOut.append(System.getProperty("line.separator"));
-	  }
-	}
-	ourLogger.info(totalOut.toString());
 
 	if (JetiLogAnalyticsController.getInstance().isDoModelPrint()) {
 	  System.out.println(modelOut);
 	}
-	System.out.println(totalOut);
+
   }
 
   public String toString() {
 	if (this.getFlightCount() == 0) {
 	  return "";
 	}
-	int identation = 30;
+	int indentation = 30;
 	StringBuffer out = new StringBuffer();
-	out.append(NLS.get(NLSKey.CO_MODEL, identation) + "  : ");
+	out.append(NLS.get(NLSKey.CO_MODEL, indentation) + "  : ");
 	out.append(this.getName());
 	out.append(System.getProperty("line.separator"));
-	out.append("  " + NLS.get(NLSKey.CO_FLIGHT_COUNT, identation) + ": ");
+	out.append("  " + NLS.get(NLSKey.CO_FLIGHT_COUNT, indentation) + ": ");
 	out.append(this.getFlightCount());
 	out.append(System.getProperty("line.separator"));
-	out.append("  " + NLS.get(NLSKey.CO_FLIGHT_MINMAX, identation) + ": ");
-	out.append(this.getFlightMinMax());
+	out.append(
+		"  " + NLS.fillWithBlanks(NLS.get(NLSKey.CO_LOGDURATION) + " " + NLS.get(NLSKey.CO_TOTAL), indentation) + ": ");
+	out.append(TimeDuration.getString(this.getLogTime()) + " " + NLS.get(NLSKey.CO_GEN_INHOURS));
 	out.append(System.getProperty("line.separator"));
-	out.append("  " + NLS.fillWithBlanks(NLS.get(NLSKey.CO_FLIGHTDURATION) + " " + NLS.get(NLSKey.CO_TOTAL), identation)
-		+ ": ");
-	out.append(TimeDuration.getString(this.getFlightTime()));
+	out.append("  "
+		+ NLS.fillWithBlanks(NLS.get(NLSKey.CO_FLIGHTDURATION) + " " + NLS.get(NLSKey.CO_TOTAL), indentation) + ": ");
+	out.append(TimeDuration.getString(this.getFlightTime()) + " " + NLS.get(NLSKey.CO_GEN_INHOURS));
 	out.append(System.getProperty("line.separator"));
 
-	out.append(
-		"  " + NLS.fillWithBlanks(NLS.get(NLSKey.CO_LOGDURATION) + " " + NLS.get(NLSKey.CO_TOTAL), identation) + ": ");
-	out.append(TimeDuration.getString(this.getLogTime()));
+	out.append("  "
+		+ NLS.fillWithBlanks(NLS.get(NLSKey.CO_FLIGHTDURATION) + "-" + NLS.get(NLSKey.CO_GEN_AVG), indentation) + ": "
+		+ TimeDuration.getString(this.getLogTime() / this.getFlightCount()) + " " + NLS.get(NLSKey.CO_GEN_INHOURS));
+	out.append("\n");
+
+	out.append("  " + NLS.get(NLSKey.CO_FLIGHT_MINMAX, indentation) + ": ");
+	out.append(this.getFlightMinMax());
 	out.append(System.getProperty("line.separator"));
 	for (SensorAttribute attr : myAttributes) {
-	  out.append("  " + NLS.fillWithBlanks(attr.getName(), identation) + ": ");
+	  out.append("  " + NLS.fillWithBlanks(attr.getName(), indentation) + ": ");
 	  out.append(attr.getValueString());
 	  out.append(System.getProperty("line.separator"));
 	}
@@ -320,17 +270,17 @@ public class Model {
 	  List<String> alarmList = new ArrayList<String>(myAlarms.keySet());
 	  alarmList.sort(Comparator.naturalOrder());
 	  for (String alarm : alarmList) {
-		out.append("    " + NLS.fillWithBlanks(alarm, identation - 2) + ": " + myAlarms.get(alarm));
+		out.append("    " + NLS.fillWithBlanks(alarm, indentation - 2) + ": " + myAlarms.get(alarm));
 		out.append(System.getProperty("line.separator"));
 	  }
 	}
 	if (JetiLogAnalyticsController.getInstance().isDoDevicesPrint()) {
-	  out.append("  " + NLS.get(NLSKey.CO_DEVICES, identation) + ": ");
+	  out.append("  " + NLS.get(NLSKey.CO_DEVICES, indentation) + ": ");
 	  out.append(getSensorDevicesString());
 	  out.append(System.getProperty("line.separator"));
 	}
 	if (JetiLogAnalyticsController.getInstance().isDoFlightPrint()) {
-	  out.append("  " + NLS.get(NLSKey.CO_FLIGHTS, identation) + "");
+	  out.append("  " + NLS.get(NLSKey.CO_FLIGHTS, indentation) + "");
 	  out.append(System.getProperty("line.separator"));
 	  for (Flight f : this.getFlights()) {
 		out.append(f);

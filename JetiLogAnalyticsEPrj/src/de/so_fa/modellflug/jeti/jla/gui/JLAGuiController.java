@@ -75,6 +75,39 @@ public class JLAGuiController {
 	  ourLogger.info("to " + date);
 	  FX_ToDate.setValue(LocalDate.parse(date));
 	}
+	checkDates(FX_FromDate.getValue(), FX_ToDate.getValue());
+  }
+
+  public void checkDates(LocalDate aFr, LocalDate aTo) {
+	LocalDate fr = aFr;
+	LocalDate to = aTo;
+	if (aFr == null) {
+	  fr = FX_FromDate.getValue();
+	  if (fr == null) {
+		fr = LocalDate.MIN;
+	  }
+	  if (to == null) {
+		to = LocalDate.now();
+	  }
+	  if (to.toEpochDay() < fr.toEpochDay()) {
+		FX_FromDate.setValue(to);
+	  }
+	} else
+	if (aTo == null) {
+	  to = FX_ToDate.getValue();
+	  if (to == null) {
+		to = LocalDate.now();
+	  }
+	  if (fr == null) {
+		fr = LocalDate.MIN;
+	  }
+	  if (to.toEpochDay() < fr.toEpochDay()) {
+		FX_ToDate.setValue(fr);
+	  }
+	} else
+	if (to.toEpochDay() < fr.toEpochDay()) {
+	  FX_ToDate.setValue(fr);
+	}
   }
 
   /**
@@ -155,7 +188,8 @@ public class JLAGuiController {
 	String dateString = "";
 	if (null != date) {
 	  dateString = date.format(DateTimeFormatter.ISO_LOCAL_DATE);
-	} 
+	}
+	checkDates(date, null);
 	GenericConfig.getInstance(JetiLogAnalytics.APP_NAME).setValue(JLAGui.CFG_FROM_DATE, dateString);
 	GenericConfig.getInstance(JetiLogAnalytics.APP_NAME).saveConfig();
   }
@@ -166,7 +200,8 @@ public class JLAGuiController {
 	String dateString = "";
 	if (null != date) {
 	  dateString = date.format(DateTimeFormatter.ISO_LOCAL_DATE);
-	} 
+	}
+	checkDates(null, date);
 	GenericConfig.getInstance(JetiLogAnalytics.APP_NAME).setValue(JLAGui.CFG_TO_DATE, dateString);
 	GenericConfig.getInstance(JetiLogAnalytics.APP_NAME).saveConfig();
   }
@@ -200,9 +235,10 @@ public class JLAGuiController {
 		// System.setErr(printStream);
 		LocalDate from = FX_FromDate.getValue();
 		LocalDate to = FX_ToDate.getValue();
+		JetiLogAnalyticsController.getInstance().setFromRange(from);
+		JetiLogAnalyticsController.getInstance().setToRange(to);
 		JetiLogAnalytics.startAnalysis(
-			new File(GenericConfig.getInstance(JetiLogAnalytics.APP_NAME).getValue(JLAGui.CFG_JETI_LOG_PATH)), from,
-			to);
+			new File(GenericConfig.getInstance(JetiLogAnalytics.APP_NAME).getValue(JLAGui.CFG_JETI_LOG_PATH)));
 		// re-assigns standard output stream and error output stream
 
 		Platform.runLater(new Runnable() {

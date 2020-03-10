@@ -50,7 +50,7 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
   long myStartOffset = 0;
   long myActualTime = 0;
   boolean myIgnoreMark = false;
-  
+
   public boolean getIgnoreMark() {
 	return myIgnoreMark;
   }
@@ -71,7 +71,8 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
 	if (aFile == null || !JetiLogDataScanner.validateLogFile(aFolder, aFile)) {
 	  ourLogger.info("ignoring log file : " + aFile);
 	  // String folderString = null == aFolder ? "" : aFolder.getName();
-	  // System.out.println(NLS.get(NLSKey.CO_LOG_FILE_NOT_AS_EXPECTED) + ": " + folderString + "/" + aFile.getName());
+	  // System.out.println(NLS.get(NLSKey.CO_LOG_FILE_NOT_AS_EXPECTED) + ": " +
+	  // folderString + "/" + aFile.getName());
 	  return;
 	}
 	ourLogDataList.add(new JetiLogDataScanner(aFile, aFolder));
@@ -120,13 +121,14 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
 		  if (strLine.startsWith("# ")) {
 			isJetiLog = true;
 			myModelName = strLine.substring(2);
-			  Matcher m = JetiLogAnalyticsController.getInstance().getModelFilter().matcher(myModelName);
-			  if (!m.matches()) {
-				// if the model name does not match with the fitler pattern, try the next one ;-)
-				ourLogger.info("skipping model: " + myModelName);
-				myIgnoreMark = true;
-				break;
-			  }
+			Matcher m = JetiLogAnalyticsController.getInstance().getModelFilter().matcher(myModelName);
+			if (!m.matches()) {
+			  // if the model name does not match with the fitler pattern, try the next one
+			  // ;-)
+			  ourLogger.info("skipping model: " + myModelName);
+			  myIgnoreMark = true;
+			  break;
+			}
 			for (ISensorObserver sensorObserver : ourSensorObservers) {
 			  sensorObserver.resetValueHandler();
 			  sensorObserver.newLogData(this);
@@ -273,6 +275,16 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
   public String getLogName() {
 	return myDateFolder.getName() + File.separator + myLogFile.getName();
   }
+  
+  public static LocalDate getFirstDate() {
+	Collections.sort(ourLogDataList);
+	return ourLogDataList.get(0).getDate();
+  }
+
+  public static LocalDate getLastDate() {
+	Collections.sort(ourLogDataList);
+	return ourLogDataList.get(ourLogDataList.size()-1).getDate();
+  }
 
   public static void analyseData() {
 	Collections.sort(ourLogDataList);
@@ -288,10 +300,12 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
 		  continue;
 		}
 		ourLogger.info("scanning data : model: " + data.getModelName() + ", flightcnt: " + data.getFlightCnt());
-		System.out.println("  " + NLS.get(NLSKey.CO_SCAN_LOG) + ": " + data.getLogFolder().getName() + "/"
-			+ data.getLogFile().getName() + " : " + NLS.get(NLSKey.CO_MODEL) + ": " + data.getModelName() + ", "
+		StringBuffer out = new StringBuffer();
+		out.append("  "
+			+ NLS.fillWithBlanks("  " + NLS.get(NLSKey.CO_SCAN_LOG) + ": " + data.getLogFolder().getName() + "/"
+				+ data.getLogFile().getName() + " : " + NLS.get(NLSKey.CO_MODEL) + ": " + data.getModelName(), 70)
 			+ NLS.get(NLSKey.CO_FLIGHT_COUNT) + ": " + data.getFlightCnt());
-
+		System.out.println(out);
 		if (data.isJetiLogfile()) {
 		  ourLogger.fine("using Jeti log file: " + data.getLogFolder().getName() + "/" + data.getLogFile().getName());
 		  Model.addLogData(data);
@@ -357,6 +371,10 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
   @Override
   public void flightEnd(Flight aF) {
 	myFlightCnt++;
+  }
+  
+  public LocalDate getDate() {
+	return JetiLogDataScanner.getLocalDate(myDateFolder);
   }
 
 }
