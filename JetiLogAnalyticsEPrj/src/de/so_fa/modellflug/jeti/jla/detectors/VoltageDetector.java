@@ -35,7 +35,7 @@ public class VoltageDetector extends SensorObserverAdapter implements IFlightLis
   public void nameMatch(SensorValueDescription aDescr) {
 
 	if (aDescr.getSensorDevice().startsWith("RxB")) {
-	  return;
+	  // also use the B Receiver return;
 	}
 	ourLogger.info("add voltage handler for: " + aDescr);
 	myHandler = new VoltageHandler(this, aDescr);
@@ -67,7 +67,7 @@ public class VoltageDetector extends SensorObserverAdapter implements IFlightLis
   @Override
   public void flightEnd(Flight aFlight) {
 	if (myStatistics.getN() > 10) {
-	  aFlight.addAttribute(NLSKey.CO_GEN_VOLTAGE, myUnit, new Float((float) (myStatistics.getMin())), null, null, true);
+	  aFlight.addAttribute(NLSKey.CO_GEN_VOLTAGE, myUnit, new Float((float) (myStatistics.getMin())),new Float((float) (myStatistics.getMax())), new Float((float) (myStatistics.getMean())), true);
 	}
   }
 }

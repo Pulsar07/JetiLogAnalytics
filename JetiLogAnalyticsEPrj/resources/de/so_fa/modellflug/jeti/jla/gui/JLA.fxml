@@ -17,7 +17,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox fx:id="FX_" minWidth="-Infinity" prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8.0.202-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.so_fa.modellflug.jeti.jla.gui.JLAGuiController">
+<VBox fx:id="FX_" minWidth="-Infinity" prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8.0.202" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.so_fa.modellflug.jeti.jla.gui.JLAGuiController">
   <children>
       <HBox prefHeight="100.0" prefWidth="200.0">
          <children>
@@ -113,6 +113,7 @@
                               <Font name="System Bold Italic" size="13.0" />
                            </font>
                         </Button>
+                        <Button fx:id="FX_Deidentification" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onAction_Deidentification" text="%FX_Deidentification" textFill="#2800f7" />
                         <Button fx:id="FX_Exit" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onAction_Exit" text="%FX_Exit" />
                      </children>
                   </VBox>

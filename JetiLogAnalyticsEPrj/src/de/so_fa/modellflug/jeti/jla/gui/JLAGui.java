@@ -17,6 +17,7 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
+
 public class JLAGui extends Application {
   static private GenericConfig ourConfig;
   public static final String CFG_JETI_LOG_PATH = "JetiLogPath";
@@ -31,7 +32,7 @@ public class JLAGui extends Application {
   
   @Override
   public void init() {
-	
+	int i = 5;
   }
   
 
@@ -76,7 +77,7 @@ public class JLAGui extends Application {
     Image applicationIcon = new Image(getClass().getResourceAsStream("glidersymbol.png"));
     aStage.getIcons().add(applicationIcon);
 
-	aStage.setTitle("JETI Log Analytics");
+	aStage.setTitle("JETI Log Analytics (by RS)");
 	aStage.setScene(scene);
 	initConfig();
 	myFXMLController.init();

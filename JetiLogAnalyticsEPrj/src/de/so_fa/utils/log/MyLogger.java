@@ -61,7 +61,10 @@ public class MyLogger {
     // FINER
     // FINEST
     fh.setLevel(Level.INFO);
+    
     ch.setLevel(Level.WARNING);
+    // TODO
+    ch.setLevel(Level.INFO);
   }
 
 }

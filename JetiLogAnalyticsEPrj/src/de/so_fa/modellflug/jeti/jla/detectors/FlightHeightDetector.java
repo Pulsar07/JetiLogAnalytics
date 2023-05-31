@@ -36,7 +36,7 @@ public class FlightHeightDetector extends SensorObserverAdapter implements IFlig
 	// 000000000;4199312918;5;Abs. Hoehe;m
 	// this method shall return a Pattern fitting to the string in the JETI log
 	// header, the sensor value to be examined
-	return Pattern.compile(".*hoehe.*|.*alti.*|.*height.*");
+	return Pattern.compile("hoehe.*|.*alti.*de|height.*");
   }
 
   @Override

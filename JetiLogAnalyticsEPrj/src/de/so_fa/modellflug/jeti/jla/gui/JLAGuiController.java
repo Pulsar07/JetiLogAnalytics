@@ -11,6 +11,8 @@ import java.util.regex.Pattern;
 
 import de.so_fa.modellflug.jeti.jla.JetiLogAnalytics;
 import de.so_fa.modellflug.jeti.jla.JetiLogAnalyticsController;
+import de.so_fa.modellflug.jeti.jla.jetilog.JetiLogDataScanner;
+import de.so_fa.modellflug.jeti.jla.jetilog.JetiRawLogData;
 import de.so_fa.modellflug.jeti.jla.lang.NLS;
 import de.so_fa.modellflug.jeti.jla.lang.NLS.NLSKey;
 import de.so_fa.utils.config.GenericConfig;
@@ -30,6 +32,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
@@ -48,6 +51,8 @@ public class JLAGuiController {
   private DatePicker FX_ToDate;
   @FXML
   private Button FX_StartAnalysis;
+  @FXML
+  private Button FX_Deidentification;
   @FXML
   private TextArea FX_ResultArea;
   @FXML
@@ -92,8 +97,7 @@ public class JLAGuiController {
 	  if (to.toEpochDay() < fr.toEpochDay()) {
 		FX_FromDate.setValue(to);
 	  }
-	} else
-	if (aTo == null) {
+	} else if (aTo == null) {
 	  to = FX_ToDate.getValue();
 	  if (to == null) {
 		to = LocalDate.now();
@@ -104,8 +108,7 @@ public class JLAGuiController {
 	  if (to.toEpochDay() < fr.toEpochDay()) {
 		FX_ToDate.setValue(fr);
 	  }
-	} else
-	if (to.toEpochDay() < fr.toEpochDay()) {
+	} else if (to.toEpochDay() < fr.toEpochDay()) {
 	  FX_ToDate.setValue(fr);
 	}
   }
@@ -210,6 +213,8 @@ public class JLAGuiController {
 
   @FXML
   protected void onAction_StartAnalysis(ActionEvent aEvent) {
+	ourLogger.info("starting Analysis");
+
 	if (myAnalysisThread != null && myAnalysisThread.isAlive()) {
 	  JetiLogAnalytics.stop();
 	  myAnalysisThread.interrupt();
@@ -305,6 +310,26 @@ public class JLAGuiController {
 
 	GenericConfig.getInstance(JetiLogAnalytics.APP_NAME).setValue(JLAGui.CFG_JETI_LOG_PATH, file.getPath());
 	GenericConfig.getInstance(JetiLogAnalytics.APP_NAME).saveConfig();
+  }
+
+  @FXML
+  protected void onAction_Deidentification(ActionEvent aEvent) {
+	ourLogger.info("starting onAction_Deidentification");
+
+	FileChooser fileChooser = new FileChooser();
+	fileChooser.setTitle("Open Resource File");
+
+	fileChooser.setInitialDirectory(
+		new File(GenericConfig.getInstance(JetiLogAnalytics.APP_NAME).getValue(JLAGui.CFG_JETI_LOG_PATH)));
+	fileChooser.setTitle("Open Resource File");
+
+	Node source = (Node) aEvent.getSource();
+	Stage stage = (Stage) source.getScene().getWindow();
+
+	File file = fileChooser.showOpenDialog(stage);
+	ourLogger.info("File=" + file.getAbsoluteFile());
+	JetiRawLogData logFile = new JetiRawLogData(file);
+	logFile.anonymizeLog();
   }
 
   public void setVersion(String aVersion) {

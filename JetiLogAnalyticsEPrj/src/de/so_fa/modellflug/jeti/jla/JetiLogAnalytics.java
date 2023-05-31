@@ -61,8 +61,10 @@ public class JetiLogAnalytics {
    * 
    * 0.2.5 : 03/2020 RS : more details in total statistic
    * 
+   * 0.2.6 : 01/2023 RS : fixed confusion with height detection of height sensor names
+   * 
    */
-  public static final String VERSION = "0.2.5";
+  public static final String VERSION = "0.2.6";
   public static final String APP_NAME = "JetiLogAnalytics";
   private final static Logger ourLogger = Logger.getLogger(JetiLogAnalytics.class.getName());
   static File ourLogFolder;
@@ -143,7 +145,7 @@ public class JetiLogAnalytics {
 		JLAGui.startGUI(aArgs);
 	  } else {
 		if (ourLogFolder == null || !ourLogFolder.isDirectory()) {
-		  ourLogger.severe("no valid log folder given : " + ourLogFolder.getPath());
+		  ourLogger.severe("either no log folder given or not a directory");
 		  System.exit(-1);
 		}
 		JetiLogAnalyticsController.getInstance().setFromRange(ourFromDate);
@@ -154,6 +156,7 @@ public class JetiLogAnalytics {
 	  ourLogger.log(Level.SEVERE, "unexpected error:", e);
 	}
   }
+  
 
   public static void startAnalysis(File aJetiLogFolder) {
 	try {

@@ -3,8 +3,10 @@ package de.so_fa.modellflug.jeti.jla.jetilog;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -85,7 +87,11 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
   public int getLogDuration() {
 	return myLogDuration;
   }
-
+  
+  public JetiLogDataScanner(File aFile) {
+	this(aFile, aFile.getParentFile());
+  }
+  
   public JetiLogDataScanner(File aFile, File aFolder) {
 	myLogFile = aFile;
 	myDateFolder = aFolder;
@@ -375,6 +381,15 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
   
   public LocalDate getDate() {
 	return JetiLogDataScanner.getLocalDate(myDateFolder);
+  }
+
+  public static void anonymizeLog(File aFile) {
+	 init();
+	 File path = aFile.getParentFile();
+	 ourLogger.info("log file file: " + aFile);
+	 ourLogger.info("log file path: " + path);
+//	 addNewLog(file, aFolder);
+//	 ourLogDataList.add(new JetiLogDataScanner(aFile, aFolder));
   }
 
 }
