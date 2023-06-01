@@ -240,14 +240,18 @@ public class JetiLogDataScanner implements Comparable<JetiLogDataScanner>, IFlig
 	}
 
 	for (ISensorObserver sensorObserver : ourSensorObservers) {
-	  Pattern p = sensorObserver.getSensorNamePattern();
-	  if (null != p) {
-		Matcher m = p.matcher(descr.getName().toLowerCase());
-		if (m.matches()) {
-		  sensorObserver.nameMatch(descr);
-		}
-	  }
+	  sensorObserver.registerSensor(descr);
 	}
+	
+//	for (ISensorObserver sensorObserver : ourSensorObservers) {
+//	  Pattern p = sensorObserver.getSensorNamePattern();
+//	  if (null != p) {
+//		Matcher m = p.matcher(descr.getName().toLowerCase());
+//		if (m.matches()) {
+//		  sensorObserver.nameMatch(descr);
+//		}
+//	  }
+//	}
   }
 
   public static boolean validateLogFile(File aLogFolder, File aLogFile) {

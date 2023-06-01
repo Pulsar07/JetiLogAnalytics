@@ -1,6 +1,7 @@
 package de.so_fa.modellflug.jeti.jla.detectors;
 
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
@@ -30,7 +31,17 @@ public class SpeedDetector extends SensorObserverAdapter implements IFlightListe
   String myUnit = "km/h";
 
   @Override
-  public Pattern getSensorNamePattern() {
+  public void registerSensor(SensorValueDescription aDescr) {
+	Pattern p = getSensorNamePattern();
+	if (null != p) {
+	  Matcher m = p.matcher(aDescr.getName().toLowerCase());
+	  if (m.matches()) {
+		nameMatch(aDescr);
+	  }
+	}
+  }
+  
+  Pattern getSensorNamePattern() {
 	return Pattern.compile(".*speed");
   }
 
@@ -40,8 +51,7 @@ public class SpeedDetector extends SensorObserverAdapter implements IFlightListe
 	myAirSpeedHandler = null;
   }
 
-  @Override
-  public void nameMatch(SensorValueDescription aDescr) {
+  void nameMatch(SensorValueDescription aDescr) {
 
 	String lcname = aDescr.getName().toLowerCase();
 	if (lcname.matches("gps.*speed")) {

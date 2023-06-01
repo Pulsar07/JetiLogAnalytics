@@ -3,6 +3,7 @@ package de.so_fa.modellflug.jeti.jla.detectors;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.so_fa.modellflug.jeti.jla.datamodel.Flight;
@@ -37,13 +38,21 @@ public class AlarmDetector extends SensorObserverAdapter implements IFlightListe
   }
 
   @Override
-  public Pattern getSensorNamePattern() {
+  public void registerSensor(SensorValueDescription aDescr) {
+	Pattern p = getSensorNamePattern();
+	if (null != p) {
+	  Matcher m = p.matcher(aDescr.getName().toLowerCase());
+	  if (m.matches()) {
+		nameMatch(aDescr);
+	  }
+	}
+  }
+  Pattern getSensorNamePattern() {
 	// not valid for alarms
 	return null;
   }
 
-  @Override
-  public void nameMatch(SensorValueDescription aDescr) {
+  void nameMatch(SensorValueDescription aDescr) {
 	// is not called for alarms
 	
   }

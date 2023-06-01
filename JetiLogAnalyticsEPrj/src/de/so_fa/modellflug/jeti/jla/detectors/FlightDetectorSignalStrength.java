@@ -1,6 +1,7 @@
 package de.so_fa.modellflug.jeti.jla.detectors;
 
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.so_fa.modellflug.jeti.jla.datamodel.Flight;
@@ -49,12 +50,21 @@ public class FlightDetectorSignalStrength extends SensorObserverAdapter implemen
   }
 
   @Override
-  public Pattern getSensorNamePattern() {
+  public void registerSensor(SensorValueDescription aDescr) {
+	Pattern p = getSensorNamePattern();
+	if (null != p) {
+	  Matcher m = p.matcher(aDescr.getName().toLowerCase());
+	  if (m.matches()) {
+		nameMatch(aDescr);
+	  }
+	}
+  }
+  
+ Pattern getSensorNamePattern() {
 	return Pattern.compile("A[1|2]", Pattern.CASE_INSENSITIVE);
   }
 
-  @Override
-  public void nameMatch(SensorValueDescription aDescr) {
+  void nameMatch(SensorValueDescription aDescr) {
 	// this is called each time a new log file is scanned, so force initialization
 	// of local variables
 	init();

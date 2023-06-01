@@ -63,8 +63,10 @@ public class JetiLogAnalytics {
    * 
    * 0.2.6 : 01/2023 RS : fixed confusion with height detection of height sensor names
    * 
+   * 0.2.7 : 06/2023 RS : refactoring for sensor detectors to support exclusion of sensor descriptions
+   * 
    */
-  public static final String VERSION = "0.2.6";
+  public static final String VERSION = "0.2.7";
   public static final String APP_NAME = "JetiLogAnalytics";
   private final static Logger ourLogger = Logger.getLogger(JetiLogAnalytics.class.getName());
   static File ourLogFolder;

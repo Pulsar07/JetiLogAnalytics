@@ -1,6 +1,7 @@
 package de.so_fa.modellflug.jeti.jla.detectors;
 
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
@@ -27,12 +28,21 @@ public class VoltageDetector extends SensorObserverAdapter implements IFlightLis
   String myUnit;
 
   @Override
-  public Pattern getSensorNamePattern() {
+  public void registerSensor(SensorValueDescription aDescr) {
+	Pattern p = getSensorNamePattern();
+	if (null != p) {
+	  Matcher m = p.matcher(aDescr.getName().toLowerCase());
+	  if (m.matches()) {
+		nameMatch(aDescr);
+	  }
+	}
+  }
+  
+ Pattern getSensorNamePattern() {
 	return Pattern.compile("u rx", Pattern.CASE_INSENSITIVE);
   }
 
-  @Override
-  public void nameMatch(SensorValueDescription aDescr) {
+  void nameMatch(SensorValueDescription aDescr) {
 
 	if (aDescr.getSensorDevice().startsWith("RxB")) {
 	  // also use the B Receiver return;

@@ -3,6 +3,7 @@ package de.so_fa.modellflug.jeti.jla.detectors;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
@@ -25,8 +26,7 @@ public class FlightHeightDetector extends SensorObserverAdapter implements IFlig
 	Flight.addFlightListener(this);
   }
 
-  @Override
-  public Pattern getSensorNamePattern() {
+  Pattern getSensorNamePattern() {
 	// Example:
 	// 000000000;4364922868;3;Rel. altit;m
 	// 000000000;4199312918;5;Altitude;m
@@ -38,9 +38,25 @@ public class FlightHeightDetector extends SensorObserverAdapter implements IFlig
 	// header, the sensor value to be examined
 	return Pattern.compile("hoehe.*|.*alti.*de|height.*");
   }
-
+  
+  Pattern getSensorNameExclusionPattern() {
+	// 000000000;4173112678;3;Hoehengew.;m
+	return Pattern.compile("hoehe.*gew.*|.*height.*gain.*");
+  }
+  
   @Override
-  public void nameMatch(SensorValueDescription aDescr) {
+  public void registerSensor(SensorValueDescription aDescr) {
+	Pattern p = getSensorNamePattern();
+	if (null != p) {
+	  Matcher m = p.matcher(aDescr.getName().toLowerCase());
+	  Matcher me = getSensorNameExclusionPattern().matcher(aDescr.getName().toLowerCase());
+	  if (m.matches() && !me.matches()) {
+		nameMatch(aDescr);
+	  }
+	}
+  }
+
+  void nameMatch(SensorValueDescription aDescr) {
 
 	ourLogger.info("adding height description: " + aDescr);
 	HeightHandler handler = new HeightHandler(this, aDescr);
@@ -119,12 +135,12 @@ public class FlightHeightDetector extends SensorObserverAdapter implements IFlig
 		ourLogger.info("first: " + handler.toString() + "  " + handler.getStatistics().toString());
 		s = handler.getStatistics();
 	  } else {
-		float q = ((float) s.getN())/handler.getStatistics().getN();
+		float q = ((float) s.getN()) / handler.getStatistics().getN();
 		if (q < 0.5f) {
-		    ourLogger.info("more content: " + handler.toString() + "  " + handler.getStatistics().toString());
-		  SummaryStatistics.copy(handler.getStatistics(), s);		  
+		  ourLogger.info("more content: " + handler.toString() + "  " + handler.getStatistics().toString());
+		  SummaryStatistics.copy(handler.getStatistics(), s);
 		} else if (handler.getStatistics().getN() > 100 && handler.getStatistics().getSum() < s.getSum()) {
-		    ourLogger.info("better content: " + handler.toString() + "  " + handler.getStatistics().toString());
+		  ourLogger.info("better content: " + handler.toString() + "  " + handler.getStatistics().toString());
 		  SummaryStatistics.copy(handler.getStatistics(), s);
 		}
 	  }
@@ -163,6 +179,6 @@ class HeightHandler extends SensorValueHandlerAdapter {
 	  myStatistic = new SummaryStatistics();
 	}
 	myStatistic.addValue(aValue.getValue());
-	// ourLogger.severe(this + "  " + aValue);
+	// ourLogger.severe(this + " " + aValue);
   }
 }
