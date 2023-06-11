@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import de.so_fa.modellflug.jeti.jla.JetiLogAnalytics;
 import de.so_fa.modellflug.jeti.jla.JetiLogAnalyticsController;
+import de.so_fa.modellflug.jeti.jla.detectors.FlightDetectorSignalStrength;
 import de.so_fa.modellflug.jeti.jla.jetilog.JetiLogDataScanner;
 import de.so_fa.modellflug.jeti.jla.jetilog.JetiRawLogData;
 import de.so_fa.modellflug.jeti.jla.lang.NLS;
@@ -26,6 +27,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -35,6 +37,8 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 
 public class JLAGuiController {
   public static Logger ourLogger = Logger.getLogger(JLAGuiController.class.getName());
@@ -66,9 +70,15 @@ public class JLAGuiController {
   @FXML
   private CheckBox FX_CheckDevices;
   @FXML
+  private Slider FX_SlideFlightSensitivity;
+  @FXML
+  private Label FX_FlightSensitivityValue;
+  @FXML
   private TextField FX_TextFieldModelFilter;
-
+  
   public void init() {
+	ourLogger.info("Init");
+
 	String date;
 	date = GenericConfig.getInstance(JetiLogAnalytics.APP_NAME).getValue(JLAGui.CFG_FROM_DATE);
 	if (date != null && !date.isEmpty()) {
@@ -81,6 +91,18 @@ public class JLAGuiController {
 	  FX_ToDate.setValue(LocalDate.parse(date));
 	}
 	checkDates(FX_FromDate.getValue(), FX_ToDate.getValue());
+		
+	ourLogger.info("FlightSensitivity");
+	Number n = FX_SlideFlightSensitivity.getValue();
+	FX_FlightSensitivityValue.setText(String.format("%.2f", n));
+	FX_SlideFlightSensitivity.valueProperty().addListener(new ChangeListener<Number>() {
+      public void changed(ObservableValue<? extends Number> ov,
+          Number old_val, Number new_val) {
+    	FlightDetectorSignalStrength.setDetectionStrengthSensitivityVaule(new_val.floatValue());
+    	// do something FX_SlideFlightSensitivity.setLevel(new_val.doubleValue());
+    	FX_FlightSensitivityValue.setText(String.format("%.2f", new_val));
+      }
+  });
   }
 
   public void checkDates(LocalDate aFr, LocalDate aTo) {
@@ -117,7 +139,6 @@ public class JLAGuiController {
    * Initializes the controller class.
    */
   public void initialize(URL url, ResourceBundle rb) {
-	ourLogger.severe("initialize");
 	FX_FromDate.setConverter(new StringConverter<LocalDate>() {
 	  String pattern = "dd.MM.YY";
 	  DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(pattern);
@@ -168,6 +189,7 @@ public class JLAGuiController {
 	  FX_CheckModel.setSelected(true);
 	}
   }
+  
 
   @FXML
   protected void onAction_CheckDevices(ActionEvent aEvent) {

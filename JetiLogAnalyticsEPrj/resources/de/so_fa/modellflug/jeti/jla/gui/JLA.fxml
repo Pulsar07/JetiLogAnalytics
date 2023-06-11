@@ -8,6 +8,7 @@
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
@@ -16,6 +17,7 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
 
 <VBox fx:id="FX_" minWidth="-Infinity" prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8.0.202" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.so_fa.modellflug.jeti.jla.gui.JLAGuiController">
   <children>
@@ -107,7 +109,12 @@
                               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                            </padding>
                         </CheckBox>
-                        <Pane VBox.vgrow="ALWAYS" />
+                        <Pane VBox.vgrow="ALWAYS">
+                           <children>
+                              <Slider fx:id="FX_SlideFlightSensitivity" blockIncrement="0.1" layoutX="3.0" layoutY="22.0" majorTickUnit="0.2" max="1.0" minorTickCount="1" showTickMarks="true" snapToTicks="true" />
+                              <Text layoutX="3.0" layoutY="19.0" strokeType="OUTSIDE" strokeWidth="0.0" text="%FX_SlideFlightSensivity" />
+                              <Label fx:id="FX_FlightSensitivityValue" alignment="CENTER_RIGHT" layoutX="147.0" layoutY="22.0" text="#val#" />
+                           </children></Pane>
                         <Button fx:id="FX_StartAnalysis" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onAction_StartAnalysis" text="%FX_StartAnalysis" textFill="#2ba409">
                            <font>
                               <Font name="System Bold Italic" size="13.0" />

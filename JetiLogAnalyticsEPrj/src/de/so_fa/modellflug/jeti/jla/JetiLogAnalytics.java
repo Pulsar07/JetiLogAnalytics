@@ -61,12 +61,16 @@ public class JetiLogAnalytics {
    * 
    * 0.2.5 : 03/2020 RS : more details in total statistic
    * 
-   * 0.2.6 : 01/2023 RS : fixed confusion with height detection of height sensor names
+   * 0.2.6 : 01/2023 RS : fixed confusion with height detection of height sensor
+   * names
    * 
-   * 0.2.7 : 06/2023 RS : refactoring for sensor detectors to support exclusion of sensor descriptions
+   * 0.2.7 : 06/2023 RS : refactoring for sensor detectors to support exclusion of
+   * sensor descriptions
+   *
+   * 0.2.8 : 06/2023 RS : added flight detection sensitivity to GUI and NOGUI
    * 
    */
-  public static final String VERSION = "0.2.7";
+  public static final String VERSION = "0.2.8";
   public static final String APP_NAME = "JetiLogAnalytics";
   private final static Logger ourLogger = Logger.getLogger(JetiLogAnalytics.class.getName());
   static File ourLogFolder;
@@ -92,6 +96,7 @@ public class JetiLogAnalytics {
 		  ourLogFolder = new File(aArgs[i]);
 		  if (!ourLogFolder.isDirectory()) {
 			ourLogger.severe("--dir argument is not a directory");
+			printUsage();
 			System.exit(-1);
 		  }
 		  // System.out.println("using log folder: " + args[0]);
@@ -107,6 +112,7 @@ public class JetiLogAnalytics {
 			ourFromDate = LocalDate.parse(aArgs[i]);
 		  } catch (DateTimeParseException e) {
 			ourLogger.severe("--from - argument with invalid format, only \"2016-08-16\" is supported");
+			printUsage();
 			System.exit(-1);
 		  }
 		}
@@ -116,22 +122,31 @@ public class JetiLogAnalytics {
 			ourToDate = LocalDate.parse(aArgs[i]);
 		  } catch (DateTimeParseException e) {
 			ourLogger.severe("--to - argument with invalid format, only \"2016-08-16\" is supported");
+			printUsage();
 			System.exit(-1);
 		  }
 		}
+		if (aArgs[i].equals("--sensi") | aArgs[i].equals("-sensi")) {
+		  i++;
+		  try {
+			float sensivity = Float.parseFloat(aArgs[i]);
+
+			if (sensivity < 0.0f || sensivity > 1.0f) {
+			  ourLogger.severe("--sensi - argument <" + sensivity + "> is out of range");
+			  printUsage();
+			  System.exit(-1);
+			}
+			FlightDetectorSignalStrength.setDetectionStrengthSensitivityVaule(sensivity);
+
+		  } catch (NumberFormatException e) {
+			ourLogger.severe("--sensi - argument with invalid float value");
+			printUsage();
+			System.exit(-1);
+		  }
+
+		}
 		if (aArgs[i].equals("-?") || aArgs[i].equals("-help") || aArgs[i].equals("--help") || aArgs[i].equals("?")) {
-		  System.out.println("usage: " + APP_NAME + " [option]");
-		  System.out.println(
-			  "scans JETI log files found in folder and printout the results of total, model, flight statistic");
-		  System.out.println("Example: java -jar " + APP_NAME + "-nls DE -nogui -dir ./testData/ ");
-		  System.out.println("");
-		  System.out.println("options:");
-		  System.out.println(" --nogui                      commndline mode and textoutput only application");
-		  System.out.println(" --dir <path to log-folder>   path used in command line mode");
-		  System.out.println(
-			  " --from <YYYY-MM-DD>          date to start analysing log files, if omitted all log files found are analysed");
-		  System.out.println(
-			  " --to <YYYY-MM-DD>            date to end analysing log files, if omitted all log files found are analysed");
+		  printUsage();
 		  System.exit(0);
 		}
 	  }
@@ -158,7 +173,23 @@ public class JetiLogAnalytics {
 	  ourLogger.log(Level.SEVERE, "unexpected error:", e);
 	}
   }
-  
+
+  static void printUsage() {
+	System.out.println("usage: " + APP_NAME + " [option]");
+	System.out
+		.println("scans JETI log files found in folder and printout the results of total, model, flight statistic");
+	System.out.println("Example: java -jar " + APP_NAME + "-nls DE -nogui -dir ./testData/ ");
+	System.out.println("");
+	System.out.println("options:");
+	System.out.println(" --nogui                      commndline mode and textoutput only application");
+	System.out.println(" --dir <path to log-folder>   path used in command line mode");
+	System.out.println(" --sensi <value>   sensitivity used for flight detection, float range: 0.0-1.0");
+	System.out.println(
+		" --from <YYYY-MM-DD>          date to start analysing log files, if omitted all log files found are analysed");
+	System.out.println(
+		" --to <YYYY-MM-DD>            date to end analysing log files, if omitted all log files found are analysed");
+
+  }
 
   public static void startAnalysis(File aJetiLogFolder) {
 	try {

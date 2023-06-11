@@ -29,7 +29,10 @@ public class FlightDetectorSignalStrength extends SensorObserverAdapter implemen
   private long myCurrentTimestamp;
   private A1Handler myA1Handler;
   private A2Handler myA2Handler;
-
+  static float ourSensitivityCorrectionFactor = 0.0f;
+  private static float ourSmoothFactor;
+  private static float ourLevelSignalSumStrength;
+	
   // # Radical
   // 000000000;4291922503;0;Tx;
   // 000000000;4379323544;0;Rx ;
@@ -83,6 +86,7 @@ public class FlightDetectorSignalStrength extends SensorObserverAdapter implemen
 
   public FlightDetectorSignalStrength() {
 	super();
+	setDetectionStrengthSensitivityVaule(ourSensitivityCorrectionFactor);
   }
 
 
@@ -98,7 +102,7 @@ public class FlightDetectorSignalStrength extends SensorObserverAdapter implemen
 	if (strength < 0) {
 	  // ignore values if not all values are read
 	  return;
-	}
+	}	
 
 	// Vario Filter
 	// IIR Low Pass Filter
@@ -116,11 +120,11 @@ public class FlightDetectorSignalStrength extends SensorObserverAdapter implemen
 	// := x[i] + ß * (y[i-1] - x[i])
 	// see:
 	// https://en.wikipedia.org/wiki/Low-pass_filter#Simple_infinite_impulse_response_filter
-	mySmoothedSignalStrength = strength + 0.96 * (mySmoothedSignalStrength - strength);
+	mySmoothedSignalStrength = strength + ourSmoothFactor * (mySmoothedSignalStrength - strength);
 //	 ourLogger.severe(" signal strength: " + mySmoothedSignalStrength +
 //		   " at: "
 //		   + TimeDuration.getString(myCurrentTimestamp / 1000));
-	if (mySmoothedSignalStrength < 15 && myFlightDetect == false) {
+	if (mySmoothedSignalStrength < ourLevelSignalSumStrength && myFlightDetect == false) {
 //	   ourLogger.severe(" signal strength flight ON: " + mySmoothedSignalStrength +
 //	   " at: "
 //	   + TimeDuration.getString(myCurrentTimestamp / 1000));
@@ -184,6 +188,14 @@ public class FlightDetectorSignalStrength extends SensorObserverAdapter implemen
 	myCurrentTimestamp = aValue.getTime();
 	mySignalStrength_A2 = (int) aValue.getValue();
 	flightDetectionBySignalStrength();
+  }
+  
+  public static void setDetectionStrengthSensitivityVaule(float aValue) {
+	ourSensitivityCorrectionFactor = aValue;
+	ourSmoothFactor = 0.96f - 0.039f*ourSensitivityCorrectionFactor;
+	ourLevelSignalSumStrength = 15.0f + 2.6f * ourSensitivityCorrectionFactor;
+
+	ourLogger.info("flight detection factors: " + ourSensitivityCorrectionFactor + "/" + ourSmoothFactor + "/" + ourLevelSignalSumStrength);
   }
 }
 
