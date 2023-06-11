@@ -7,6 +7,7 @@ The current version of JETI Log Analytics can be used in a command line mode or 
 
 ## Details
 The application is written to extract detailed data per flight, per model and total. One of the main features is a flight detection algorithm (based on the signal levels A1 and A2 given by any RX of JETI), which does provides extraction of detailed data only if the model is not in the near area of the transmitter (air field, workbench, ...).
+The sensitivity for this flight detection can be adjustet, to get proper flight data.
 
 JET Log Analytics needs only a base directory as argument to find the JETI log files in their date based folder structure. It scans all files and gives information about files, models, flights and overall data.
 It is possible to give a date range to filter the given information to the need range.
@@ -96,13 +97,14 @@ Some more details in German and an browser based version of JetiLogAnalytics is 
 	$ /remote/netdata/nas/JetiLogAnalytics.sh --help
 	usage: JetiLogAnalytics [option]
 	scans JETI log files found in folder and printout the results of total, model, flight statistic
-	Example: java -jar JetiLogAnalytics-nls DE -nogui -dir ./testData/ 
+	Example: java -jar JetiLogAnalytics-nls DE -nogui -dir ./testData/ --sensi 0.6
 	
 	options:
 	 --nogui                      commndline mode and textoutput only application
 	 --dir <path to log-folder>   path used in command line mode
 	 --from <YYYY-MM-DD>          date to start analysing log files, if omitted all log files found are analysed
 	 --to <YYYY-MM-DD>            date to end analysing log files, if omitted all log files found are analysed
+     --sensi <value>              sensitivity used for flight detection, float range: 0.0-1.0
 	
 ## Software
 This git repository is a Eclipse workspace. So if you want to build the software for yourself, clone the project to a folder and set this folder as a Eclipse workspace.
